@@ -14,7 +14,7 @@
     "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
     "build:full": "bun run build && bun run build:types",
     "start": "NODE_ENV=production node dist/index.js",
-    "typecheck": "bun exec tsc --noEmit",
+    "typecheck": "bun exec tsc --noEmit --project tsconfig.src.json",
     "lint": "echo 'ESLint: TypeScript files skipped - using TypeScript compiler for type checking'",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",

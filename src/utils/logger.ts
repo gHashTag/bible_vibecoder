@@ -7,42 +7,34 @@
 
 // Уровни логирования
 export enum LogLevel {
-  DEBUG = 'debug',
   INFO = 'info',
   WARN = 'warn',
   ERROR = 'error',
-  FATAL = 'fatal',
+  DEBUG = 'debug',
 }
 
 // Типы логов
 export enum LogType {
   SYSTEM = 'system',
-  DATABASE = 'database',
-  TELEGRAM_API = 'telegram_api',
-  GRAPHQL_API = 'graphql_api',
-  EXTERNAL_SERVICE = 'external_service',
   BUSINESS_LOGIC = 'business_logic',
   USER_ACTION = 'user_action',
-  SCENE = 'scene',
-  NETWORK = 'network',
-  PERFORMANCE = 'performance',
-  TEST = 'test',
+  DATABASE = 'database',
+  TELEGRAM_API = 'telegram_api',
   ERROR = 'error',
-  WARNING = 'warning',
-  INFO = 'info',
-  DEBUG = 'debug',
+  EXTERNAL_SERVICE = 'external_service',
+  SCENE = 'scene',
 }
 
 // Интерфейс для записи лога
 export interface LogEntry {
-  timestamp: Date;
+  timestamp: string;
   level: LogLevel;
-  type: LogType;
   message: string;
+  type?: LogType;
+  data?: any; // Ослабляем типизацию для гибкости
+  error?: Error;
   userId?: number | string;
   username?: string;
-  data?: any;
-  error?: Error;
 }
 
 // Класс логгера
@@ -86,29 +78,18 @@ export class Logger {
   }
 
   // Логирование
-  public log(entry: Omit<LogEntry, 'timestamp'>) {
-    const fullEntry: LogEntry = {
-      ...entry,
-      timestamp: new Date(),
+  public log(
+    level: LogLevel,
+    message: string,
+    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
+  ): void {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level,
+      message,
+      ...options,
     };
-
-    // Проверяем уровень логирования
-    if (this.shouldLog(fullEntry.level)) {
-      // Логируем в консоль
-      if (this.logToConsole) {
-        this.logToConsoleImpl(fullEntry);
-      }
-
-      // Логируем в файл
-      if (this.logToFile) {
-        this.logToFileImpl(/* fullEntry */); // Аргумент закомментирован
-      }
-
-      // Логируем в базу данных
-      if (this.logToDatabase) {
-        this.logToDatabaseImpl(/* fullEntry */); // Аргумент закомментирован
-      }
-    }
+    console.log(JSON.stringify(entry));
   }
 
   // Проверка, нужно ли логировать
@@ -118,7 +99,6 @@ export class Logger {
       LogLevel.INFO,
       LogLevel.WARN,
       LogLevel.ERROR,
-      LogLevel.FATAL,
     ];
 
     const minLevelIndex = levels.indexOf(this.minLevel);
@@ -127,121 +107,42 @@ export class Logger {
     return currentLevelIndex >= minLevelIndex;
   }
 
-  // Логирование в консоль
-  private logToConsoleImpl(entry: LogEntry) {
-    const timestamp = entry.timestamp.toISOString();
-    const prefix = `[${timestamp}] [${entry.level}] [${entry.type}]`;
-
-    let message = `${prefix} ${entry.message}`;
-
-    if (entry.userId) {
-      message += ` | User: ${entry.userId}`;
-    }
-
-    if (entry.username) {
-      message += ` (${entry.username})`;
-    }
-
-    switch (entry.level) {
-      case LogLevel.DEBUG:
-        console.debug(message);
-        break;
-      case LogLevel.INFO:
-        console.info(message);
-        break;
-      case LogLevel.WARN:
-        console.warn(message);
-        break;
-      case LogLevel.ERROR:
-      case LogLevel.FATAL:
-        console.error(message);
-        if (entry.error) {
-          console.error(entry.error);
-        }
-        break;
-    }
-
-    if (
-      entry.data &&
-      entry.level !== LogLevel.ERROR &&
-      entry.level !== LogLevel.FATAL
-    ) {
-      console.log('Additional data:', entry.data);
-    }
-  }
-
-  // Логирование в файл (заглушка)
-  private logToFileImpl(/* entry: LogEntry */) {
-    // Реализация логирования в файл
-    // Будет добавлена позже
-  }
-
-  // Логирование в базу данных (заглушка)
-  private logToDatabaseImpl(/* entry: LogEntry */) {
-    // Реализация логирования в базу данных
-    // Будет добавлена позже
-  }
-
   // Вспомогательные методы для разных уровней логирования
 
   public debug(
     message: string,
     options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
-  ) {
-    this.log({
-      level: LogLevel.DEBUG,
-      type: options?.type || LogType.SYSTEM,
-      message,
-      ...options,
-    });
+  ): void {
+    this.log(LogLevel.DEBUG, message, options);
   }
 
   public info(
     message: string,
     options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
-  ) {
-    this.log({
-      level: LogLevel.INFO,
-      type: options?.type || LogType.SYSTEM,
-      message,
-      ...options,
-    });
+  ): void {
+    this.log(LogLevel.INFO, message, options);
   }
 
   public warn(
     message: string,
     options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
-  ) {
-    this.log({
-      level: LogLevel.WARN,
-      type: options?.type || LogType.SYSTEM,
-      message,
-      ...options,
-    });
+  ): void {
+    this.log(LogLevel.WARN, message, options);
   }
 
   public error(
     message: string,
     options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
-  ) {
-    this.log({
-      level: LogLevel.ERROR,
-      type: options?.type || LogType.ERROR,
-      message,
-      ...options,
-    });
+  ): void {
+    this.log(LogLevel.ERROR, message, options);
   }
 
   public fatal(
     message: string,
     options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
-  ) {
-    this.log({
-      level: LogLevel.FATAL,
-      type: options?.type || LogType.ERROR,
-      message,
-      ...options,
-    });
+  ): void {
+    this.log(LogLevel.ERROR, message, options);
+    process.exit(1);
   }
 
   // Логирование действий пользователя
@@ -249,10 +150,8 @@ export class Logger {
     message: string,
     options?: Omit<LogEntry, 'timestamp' | 'level' | 'type' | 'message'>
   ) {
-    this.log({
-      level: LogLevel.INFO,
+    this.log(LogLevel.INFO, message, {
       type: LogType.USER_ACTION,
-      message,
       ...options,
     });
   }
@@ -262,10 +161,8 @@ export class Logger {
     message: string,
     options?: Omit<LogEntry, 'timestamp' | 'level' | 'type' | 'message'>
   ) {
-    this.log({
-      level: LogLevel.INFO,
+    this.log(LogLevel.INFO, message, {
       type: LogType.SYSTEM,
-      message,
       ...options,
     });
   }
