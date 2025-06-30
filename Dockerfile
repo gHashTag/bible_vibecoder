@@ -6,12 +6,14 @@ WORKDIR /app
 # Копируем файлы зависимостей
 COPY package.json bun.lock ./
 
-# Копируем исходный код
+# Устанавливаем зависимости
+RUN bun install --frozen-lockfile
+
+# Копируем остальной исходный код
 COPY . .
 
-# Устанавливаем зависимости и собираем проект
-# Скрипт prepare автоматически запустит build:full
-RUN bun install --frozen-lockfile
+# Собираем проект
+RUN bun run build:full
 
 # Устанавливаем переменную окружения
 ENV NODE_ENV=production
@@ -19,5 +21,5 @@ ENV NODE_ENV=production
 # Открываем порт (Railway автоматически назначит PORT)
 EXPOSE $PORT
 
-# Запускаем приложение через правильную команду
-CMD ["node", "dist/index.js"]
+# Запускаем приложение через скрипт package.json
+CMD ["bun", "run", "start"]
