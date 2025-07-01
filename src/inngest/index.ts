@@ -1,32 +1,13 @@
 /**
- * Inngest Module - Main Export
+ * Inngest - Barrel File
  *
- * Основной модуль для работы с Inngest в приложении Bible VibeCoder.
- * Предоставляет все необходимые компоненты для работы с Inngest функциями.
+ * Этот файл является основной точкой входа для модуля Inngest.
+ * Он реэкспортирует клиент Inngest и все зарегистрированные функции
+ * для легкого доступа из других частей приложения.
  */
 
-// Клиент и конфигурация
-export {
-  inngest,
-  INNGEST_PORTS,
-  getInngestUrls,
-  checkPortAvailability,
-} from './client';
+import { inngest } from './client';
+import { functions } from './functions';
 
-// Сервер и обработчики
-export { inngestHandler, inngestConfig, startInngestServer } from './server';
-
-// Функции и события
-export {
-  functions,
-  helloWorld as helloWorldFunction,
-  HELLO_WORLD_EVENT,
-  sendHelloWorldEvent,
-  type HelloWorldEventData,
-  type HelloWorldResult,
-} from './functions';
-
-/**
- * Экспорт по умолчанию для удобства импорта
- */
-export { inngest as default } from './client';
+// Клиент и зарегистрированные функции
+export { inngest, functions };

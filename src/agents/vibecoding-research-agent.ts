@@ -35,9 +35,10 @@ const ResearchAnalysisSchema = z.object({
 export type ResearchAnalysis = z.infer<typeof ResearchAnalysisSchema>;
 
 /**
- * 📊 Тип для результатов исследования
+ * @interface IResearchAnalysis
+ * @description Структура ответа от AI-агента для исследования темы.
  */
-export interface ResearchAnalysis {
+export interface IResearchAnalysis {
   topic: string;
   summary: string;
   keyInsights: string[];

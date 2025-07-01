@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "lib": ["ESNext", "DOM"],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ES2022",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -36,7 +36,7 @@
     "noUncheckedIndexedAccess": false,
     "noImplicitOverride": true,
     "types": ["@types/bun", "vitest/globals", "node"],
-    "allowImportingTsExtensions": false,
+    "allowImportingTsExtensions": true,
     "noEmit": true,
     "isolatedModules": true,
     "outDir": "./dist"
@@ -46,6 +46,11 @@
     "node_modules",
     "dist",
     "scripts",
-    "tools"
-  ]
+    "tools",
+    "src/__tests__",
+    "drizzle_migrations"
+  ],
+  "ts-node": {
+    "esm": true
+  }
 }

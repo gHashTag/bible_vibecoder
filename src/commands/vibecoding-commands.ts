@@ -1,6 +1,8 @@
 import { Telegraf, Context } from 'telegraf';
 import { VibeCodingVectorService } from '../services/vibecoding-vector.service';
 import { InstagramCanvasService } from '../services/instagram-canvas.service';
+import { VibeCodingContentService } from '../services/vibecoding-content.service';
+import { generateVibeCodingCarousel } from './functional-commands';
 import {
   VibeCodingCommandResult,
   VibeCodingSearchOptions,
@@ -13,6 +15,7 @@ import { logger } from '../utils/logger';
 
 const vectorService = new VibeCodingVectorService();
 const instagramCanvasService = new InstagramCanvasService();
+const vibeContentService = new VibeCodingContentService();
 
 /**
  * 🔍 Поиск по базе знаний Vibecoding
@@ -96,17 +99,19 @@ export async function generateVibeCodingCarousel(
     );
 
     // Конвертируем VibeCoding карточки в CarouselSlide[]
-    const slides: CarouselSlide[] = carouselCards.map((card, index) => ({
-      order: index + 1,
-      type:
-        index === 0
-          ? 'title'
-          : index === carouselCards.length - 1
-            ? 'summary'
-            : 'practice',
-      title: `${getCategoryEmoji(card.category)} ${card.title}`,
-      content: card.summary,
-    }));
+    const slides: CarouselSlide[] = carouselCards.map(
+      (card: any, index: number) => ({
+        order: index + 1,
+        type:
+          index === 0
+            ? 'title'
+            : index === carouselCards.length - 1
+              ? 'summary'
+              : 'practice',
+        title: `${getCategoryEmoji(card.category)} ${card.title}`,
+        content: card.summary,
+      })
+    );
 
     // Используем только Galaxy Spiral Blur
     const colorTemplate = ColorTemplate.GALAXY_SPIRAL_BLUR;

@@ -44,9 +44,11 @@ export const vibeCodingResearch = inngest.createFunction(
         return await vibeCodingAgent.researchTopic(topic, depth as any);
       });
 
+      const researchResult = research as ResearchAnalysis;
+
       // 📝 Шаг 2: Форматируем результаты для Telegram
       const formattedMessage = await step.run('format-results', async () => {
-        return formatResearchResults(research);
+        return formatResearchResults(researchResult);
       });
 
       // 📤 Шаг 3: Отправляем результаты пользователю
@@ -62,8 +64,8 @@ export const vibeCodingResearch = inngest.createFunction(
             data: {
               telegramUserId,
               topic,
-              confidenceLevel: research.confidenceLevel,
-              insightsCount: research.keyInsights.length,
+              confidenceLevel: researchResult.confidenceLevel,
+              insightsCount: researchResult.keyInsights.length,
             },
           });
         } catch (error) {
@@ -79,7 +81,7 @@ export const vibeCodingResearch = inngest.createFunction(
       return {
         success: true,
         topic,
-        confidenceLevel: research.confidenceLevel,
+        confidenceLevel: researchResult.confidenceLevel,
         resultsSent: true,
       };
     } catch (error) {

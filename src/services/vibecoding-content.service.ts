@@ -2,10 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { VibeCodingContent, CarouselSlide } from '../types/index';
 import { logger } from '../utils/logger';
-import { spawn } from 'child_process';
-import { Telegraf } from 'telegraf';
-import { I18n } from 'telegraf-i18n';
-import { BotContext } from '../types';
+import { VibeCodingSearchOptions } from '../types';
+import { vibeCodingAgent } from '../agents/vibecoding-research-agent';
 
 export enum ContentType {
   TEXT = 'text',
@@ -317,34 +315,35 @@ export class VibeCodingContentService {
   ): Promise<VibeCodingContent> {
     const searchResults = await this.searchByKeywords([topic], { limit: 5 });
 
-    switch (contentType) {
-      case ContentType.CAROUSEL:
-        return this.analyzeForCarousel(searchResults);
-      case ContentType.TEXT:
-        return {
-          title: topic,
-          slides: [
-            {
-              title: topic,
-              content: this.generateTextContent(searchResults),
-              order: 1,
-              type: 'text',
-            },
-          ],
-        };
-      default:
-        return {
-          title: `Неподдерживаемый тип контента: ${topic}`,
-          slides: [
-            {
-              title: 'Ошибка',
-              content: 'Этот тип контента еще не поддерживается.',
-              order: 1,
-              type: 'text',
-            },
-          ],
-        };
+    if (contentType === ContentType.CAROUSEL) {
+      return this.analyzeForCarousel(topic, searchResults);
     }
+
+    if (contentType === ContentType.TEXT) {
+      return {
+        title: topic,
+        slides: [
+          {
+            title: topic,
+            content: this.generateTextContent(searchResults),
+            order: 1,
+            type: 'text',
+          },
+        ],
+      };
+    }
+
+    return {
+      title: `Неподдерживаемый тип контента: ${topic}`,
+      slides: [
+        {
+          title: 'Ошибка',
+          content: 'Этот тип контента еще не поддерживается.',
+          order: 1,
+          type: 'text',
+        },
+      ],
+    };
   }
 
   /**
@@ -368,5 +367,43 @@ export class VibeCodingContentService {
       Основные принципы:\n- ${principles}\n\n
       Основные практики:\n- ${practices}
     `.trim();
+  }
+
+  public async generateCarouselContent(options: VibeCodingSearchOptions) {
+    try {
+      // 1. Поиск релевантных документов (здесь может быть вызов к векторной БД)
+      const searchResults = this.searchRelevantDocs(options.query);
+
+      // 2. Анализ и генерация слайдов с помощью LLM
+      const carouselData = await this.analyzeForCarousel(
+        searchResults,
+        options.query
+      );
+
+      return {
+        success: true,
+        data: carouselData,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  private async searchAndGenerate(topic: string, contentType: ContentType) {
+    try {
+      const searchResults = await this.performSearch(topic);
+      if (contentType === ContentType.CAROUSEL) {
+        return this.analyzeForCarousel(topic, searchResults);
+      }
+      return this.analyzeForText(searchResults, topic);
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 }

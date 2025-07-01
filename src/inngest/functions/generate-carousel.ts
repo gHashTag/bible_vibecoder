@@ -82,7 +82,12 @@ export const generateCarousel = inngest.createFunction(
 
     // 🎨 Получаем информацию о выбранном темплейте
     const templates = InstagramCanvasService.getColorTemplates();
-    const selectedTemplate = templates[colorTemplate];
+    const selectedTemplate =
+      templates[colorTemplate as keyof typeof ColorTemplate];
+
+    if (!selectedTemplate) {
+      throw new NonRetriableError(`Шаблон ${colorTemplate} не найден`);
+    }
 
     // 🔑 Проверяем переменные окружения
     const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -247,7 +252,7 @@ export const generateCarousel = inngest.createFunction(
       const instagramText = await step.run(
         'generate-instagram-text',
         async () => {
-          return await vibeContentService.generateInstagramPost(topic, slides);
+          // return await vibeContentService.generateInstagramPost(topic, slides);
         }
       );
 
