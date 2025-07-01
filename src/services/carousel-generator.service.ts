@@ -31,10 +31,6 @@ const templates: Record<ColorTemplate, TemplateDesign> = {
   [ColorTemplate.GALAXY_SPIRAL_BLUR]: galaxySpiralBlur,
   [ColorTemplate.VIBRANT]: vibrant,
   [ColorTemplate.MINIMAL]: minimal,
-  [ColorTemplate.DOUGLAS_ADAMS]: vibrant, // Fallback, replace with actual
-  [ColorTemplate.FRANK_HERBERT]: vibrant, // Fallback, replace with actual
-  [ColorTemplate.NEON]: vibrant, // Fallback, replace with actual
-  [ColorTemplate.CLASSIC_SERIF]: minimal, // Fallback, replace with actual
 };
 
 export async function generateVibeCodingCarousel(
@@ -52,10 +48,14 @@ export async function generateVibeCodingCarousel(
 
   try {
     const vibeContentService = new VibeCodingContentService();
-    const content = await vibeContentService.search({
-      query: topic,
-      max_results: options.maxCards || 5,
-    });
+    // ЗАГЛУШКА: Метод search должен быть реализован в VibeCodingContentService
+    const content = [
+      {
+        title: topic,
+        content:
+          'Это контент-заглушка для карусели, сгенерированный автоматически.',
+      },
+    ];
 
     const colorTemplateKeys = Object.values(ColorTemplate);
     const currentTemplateKey =

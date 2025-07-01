@@ -13,7 +13,7 @@ import {
   VibeCodingContentService,
   ContentType,
 } from '../../services/vibecoding-content.service';
-import { generateVibeCodingCarousel } from '../../commands/vibecoding-commands';
+import { generateVibeCodingCarousel } from '../../services/carousel-generator.service';
 
 const contentService = new VibeCodingContentService();
 

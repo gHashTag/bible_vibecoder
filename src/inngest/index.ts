@@ -1,13 +1,9 @@
 /**
- * Inngest - Barrel File
+ * This is the entrypoint for your Inngest functions.
  *
- * Этот файл является основной точкой входа для модуля Inngest.
- * Он реэкспортирует клиент Inngest и все зарегистрированные функции
- * для легкого доступа из других частей приложения.
+ * It's imported by the dev server and the Inngest platform.
  */
-
 import { inngest } from './client';
-import { functions } from './functions';
+import { server } from './functions';
 
-// Клиент и зарегистрированные функции
-export { inngest, functions };
+export { inngest, server };

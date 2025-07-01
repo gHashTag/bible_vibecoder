@@ -5,8 +5,9 @@
  * с поддержкой кастомных портов.
  */
 
-import { serve } from 'inngest/node';
-import { inngest } from './client';
+import express from 'express';
+import { serve } from 'inngest/express';
+import { inngest, server as inngestServer } from './';
 import { functions } from './functions';
 import { INNGEST_PORTS, getInngestUrls } from './client';
 
@@ -15,7 +16,7 @@ import { INNGEST_PORTS, getInngestUrls } from './client';
  */
 export const inngestConfig = {
   client: inngest,
-  functions,
+  functions: inngestServer.functions,
 
   // Настройки для development
   serve: {
@@ -47,17 +48,8 @@ export const startInngestServer = async (
   port: number = 3001
 ): Promise<void> => {
   try {
-    // Динамический импорт express с проверкой доступности
-    // @ts-ignore - Опциональная зависимость
-    const express = await import('express').catch(() => null);
-
-    if (!express) {
-      throw new Error(
-        'Express не установлен. Установите его: npm install express @types/express'
-      );
-    }
-
-    const app = express.default();
+    const app = express();
+    app.use(express.json());
 
     // Middleware для логирования
     app.use((req: any, _res: any, next: any) => {
@@ -93,15 +85,18 @@ export const startInngestServer = async (
       });
     });
 
-    return new Promise((resolve, reject) => {
-      const server = app.listen(port, () => {
-        console.log(`🕉️ Inngest Server запущен на порту ${port}`);
-        console.log(`📊 Dashboard: ${getInngestUrls().dashboard}`);
-        console.log(`🔗 Endpoint: http://localhost:${port}/api/inngest`);
-        resolve();
-      });
+    const PORT = process.env.PORT || 8288;
+    const server = app.listen(PORT, () => {
+      console.log(`🕉️ Inngest Server запущен на порту ${PORT}`);
+      console.log(`📊 Dashboard: ${getInngestUrls().dashboard}`);
+      console.log(`🔗 Endpoint: http://localhost:${PORT}/api/inngest`);
+    });
 
-      server.on('error', reject);
+    server.on('error', (error: any) => {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Неизвестная ошибка при запуске Inngest сервера');
     });
   } catch (error) {
     if (error instanceof Error) {

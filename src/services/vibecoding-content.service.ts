@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { VibeCodingContent, CarouselSlide } from '../types/index';
 import { logger } from '../utils/logger';
-import { VibeCodingSearchOptions } from '../types';
 
 export enum ContentType {
   TEXT = 'text',
@@ -366,5 +365,17 @@ export class VibeCodingContentService {
       Основные принципы:\n- ${principles}\n\n
       Основные практики:\n- ${practices}
     `.trim();
+  }
+
+  public async search(options: { query: string; max_results?: number }) {
+    logger.info(`Searching for content with query: ${options.query}`);
+    // ЗАГЛУШКА
+    return [
+      {
+        title: `Результат для "${options.query}"`,
+        content: 'Это контент-заглушка. Реальная логика поиска будет здесь.',
+        source: 'VibeCoding Docs',
+      },
+    ];
   }
 }

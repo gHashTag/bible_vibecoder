@@ -19,7 +19,7 @@ export const generateCarousel = inngest.createFunction(
     const { topic, telegramUserId, colorTemplate } =
       event.data as GenerateCarouselInput;
     logger.info('Received job to generate carousel', {
-      type: LogType.INNGEST_JOB,
+      type: LogType.BUSINESS_LOGIC,
       data: event.data,
     });
 
@@ -38,12 +38,20 @@ export const generateCarousel = inngest.createFunction(
         result.data.cards.length > 0
       ) {
         const instagramCanvasService = new InstagramCanvasService();
-        const imageBuffer = await step.run('generate-image-buffer', () => {
-          return instagramCanvasService.generateCarousel(
+
+        const imageBuffers = await step.run('generate-image-buffer', () => {
+          return instagramCanvasService.generateCarouselImages(
             result.data!.cards,
+            undefined,
             result.data!.colorTemplate
           );
         });
+
+        if (!imageBuffers || imageBuffers.length === 0) {
+          throw new Error('Не удалось сгенерировать изображение для карусели');
+        }
+
+        const imageBuffer = imageBuffers[0];
 
         await bot.telegram.sendPhoto(
           telegramUserId,
@@ -51,7 +59,7 @@ export const generateCarousel = inngest.createFunction(
           { caption: `✅ Ваша карусель на тему "${topic}" готова!` }
         );
         logger.info(`Carousel sent to user ${telegramUserId}`, {
-          type: LogType.SUCCESS,
+          type: LogType.SYSTEM,
         });
       } else {
         const errorMessage =
