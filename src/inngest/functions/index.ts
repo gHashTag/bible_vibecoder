@@ -5,25 +5,16 @@
  * Экспортирует все функции для регистрации в сервере.
  */
 
-import { helloWorld } from './hello-world';
-import { generateCarouselFunction } from './generate-carousel';
-import { generateResearchFunction } from './vibecoding-research';
-import { vibecodingBroadcastFunction } from './vibecoding-broadcast';
-import {
-  vibeCodingResearch,
-  vibeCodingQuickAnswer,
-} from './vibecoding-research';
+import { inngest } from '../client';
 
 /**
  * Массив всех Inngest функций для регистрации
  */
 export const functions = [
   helloWorld,
-  generateCarouselFunction,
-  generateResearchFunction,
-  vibecodingBroadcastFunction,
-  vibeCodingResearch,
-  vibeCodingQuickAnswer,
+  generateCarousel,
+  runVibecodingBroadcast,
+  runVibecodingResearch,
 ];
 
 /**
@@ -31,11 +22,9 @@ export const functions = [
  */
 export {
   helloWorld,
-  generateCarouselFunction,
-  generateResearchFunction,
-  vibecodingBroadcastFunction,
-  vibeCodingResearch,
-  vibeCodingQuickAnswer,
+  generateCarousel,
+  runVibecodingBroadcast,
+  runVibecodingResearch,
 };
 
 /**
@@ -47,8 +36,6 @@ export {
   type HelloWorldEventData,
   type HelloWorldResult,
 } from './hello-world';
-
-// VibeCoding broadcast экспорты удалены после рефакторинга
 
 /**
  * Экспорт по умолчанию для удобства

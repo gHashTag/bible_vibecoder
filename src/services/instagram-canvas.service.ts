@@ -2,6 +2,9 @@ import nodeHtmlToImage from 'node-html-to-image';
 import path from 'path';
 import { CarouselSlide, CanvasConfig, ColorTemplate } from '../types/index';
 import { logger, LogType } from '../utils/logger';
+import { VibeCodingContent, VibeCodingCarouselCard } from '../types';
+
+export type ColorTemplate = 'galaxy' | 'spiritual' | 'modern' | 'light';
 
 /**
  * 🎨 Конфигурация цветовых темплейтов
@@ -12,6 +15,7 @@ interface TemplateDesign {
   background: string;
   accent: string;
   cardBackground: string;
+  backgrounds: string[];
 }
 
 /**
@@ -52,6 +56,7 @@ export class InstagramCanvasService {
         background: 'bg-image-galaxy-spiral',
         accent: 'rgba(255, 255, 255, 0.3)',
         cardBackground: 'rgba(0, 0, 0, 0.4)',
+        backgrounds: [],
       },
     };
   }
@@ -73,6 +78,10 @@ export class InstagramCanvasService {
 
     const templates = InstagramCanvasService.getColorTemplates();
     const design = templates[colorTemplate];
+
+    if (!design) {
+      throw new Error(`Template for color ${colorTemplate} not found.`);
+    }
 
     // 🎨 Цвета текста для Galaxy Spiral Blur
     const textColor = '#ffffff'; // Белый текст поверх blur изображений

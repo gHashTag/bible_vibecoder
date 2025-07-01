@@ -141,13 +141,13 @@ export const vibecodingBroadcastFunction = inngest.createFunction(
           if (contentType === ContentType.CAROUSEL && mediaGroup.length > 0) {
             // Отправляем карусель как медиа-группу
             await bot.telegram.sendMediaGroup(
-              user.telegram_id as number,
+              parseInt(user.telegram_id),
               mediaGroup
             );
           } else {
             // Отправляем текстовое сообщение
             await bot.telegram.sendMessage(
-              user.telegram_id as number,
+              parseInt(user.telegram_id),
               `🎯 ${topic}\n\n${content.message || content.data?.title || 'Новый контент от Vibecoding!'}`,
               { parse_mode: 'HTML' }
             );

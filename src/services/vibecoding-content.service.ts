@@ -89,13 +89,11 @@ export class VibeCodingContentService {
   ): Promise<VibeCodingContent> {
     console.log(`🔍 Анализируем контент для темы: ${topic}`);
 
-    // Объединяем весь релевантный контент
-    const combinedContent = searchResults
-      .map(result => result.content)
-      .join('\n\n');
-
     // Генерируем слайды на основе контента
-    const slides = this.generateSlidesFromContent(combinedContent, topic);
+    const slides = this.generateSlidesFromContent(
+      searchResults.map(r => r.content).join('\n\n'),
+      topic
+    );
 
     return {
       title: `Карусель: ${topic}`,
@@ -314,13 +312,10 @@ export class VibeCodingContentService {
     contentType: ContentType
   ): Promise<VibeCodingContent> {
     const searchResults = await this.searchByKeywords([topic], { limit: 5 });
-    const combinedContent = searchResults
-      .map(result => result.content)
-      .join('\n\n');
 
     switch (contentType) {
       case ContentType.CAROUSEL:
-        return this.analyzeForCarousel(topic, searchResults);
+        return this.analyzeForCarousel(searchResults);
       case ContentType.TEXT:
         return {
           title: topic,
