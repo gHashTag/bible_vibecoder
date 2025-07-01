@@ -8,8 +8,10 @@ import {
   HttpLink,
   ApolloLink,
   from,
+  onError,
+  setContext,
+  createHttpLink,
 } from '@apollo/client';
-import { onError } from '@apollo/client/link/error';
 import { config } from '../config';
 import { logger, LogType } from '../utils/logger';
 import { gql } from '@apollo/client';
@@ -32,30 +34,39 @@ const httpLink = config.GRAPHQL_ENDPOINT
   : null;
 
 // Создаем обработчик ошибок
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, locations, path }) => {
-      logger.error('GraphQL error', {
-        error: new Error(message),
-        type: LogType.ERROR,
-        data: {
-          locations,
-          path,
-        },
+const errorLink = onError(
+  ({
+    graphQLErrors,
+    networkError,
+  }: {
+    graphQLErrors?: any;
+    networkError?: any;
+  }) => {
+    if (graphQLErrors) {
+      graphQLErrors.forEach(({ message, locations, path }: any) => {
+        const errorMessage = `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`;
+        logger.error(errorMessage, {
+          error: new Error(message),
+          type: LogType.ERROR,
+          data: {
+            locations,
+            path,
+          },
+        });
       });
-    });
-  }
+    }
 
-  if (networkError) {
-    logger.error('Network error', {
-      error: networkError,
-      type: LogType.ERROR,
-    });
+    if (networkError) {
+      logger.error('Network error', {
+        error: networkError,
+        type: LogType.ERROR,
+      });
+    }
   }
-});
+);
 
 // Создаем middleware для добавления токена авторизации
-const authMiddleware = new ApolloLink((operation, forward) => {
+const authMiddleware = new ApolloLink((operation: any, forward: any) => {
   // Здесь можно добавить логику для добавления токена авторизации
   // operation.setContext(({ headers = {} }) => ({
   //   headers: {

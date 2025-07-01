@@ -16,6 +16,16 @@ import {
 import { logger, LogType } from '../../utils/logger';
 import { InputMediaPhoto } from 'telegraf/types';
 import { promises as fs, createReadStream } from 'fs';
+import {
+  generateVibeCodingCarousel,
+  TemplateDesign,
+  galaxySpiralBlur,
+  vibrant,
+  minimal,
+} from '../../commands/functional-commands';
+import { NonRetriableError } from 'inngest';
+import { ColorTemplate as ColorTemplateType } from '../../types';
+import { CarouselSlide, CanvasConfig } from '../../types/index';
 // import path from "path"; // не используется
 
 const contentGenerator = new CarouselContentGeneratorService();
@@ -35,15 +45,6 @@ export interface CarouselGenerationContext {
   startTime: Date;
 }
 
-export interface CarouselSlide {
-  id: string;
-  type: 'title' | 'principle' | 'quote' | 'practice' | 'summary';
-  title: string;
-  content: string;
-  backgroundStyle: string;
-  order: number;
-}
-
 export interface ExtractedContent {
   title: string;
   principles: string[];
@@ -55,11 +56,11 @@ interface GenerateCarouselPayload {
   topic: string;
   telegramUserId: string;
   messageId: number;
-  colorTemplate?: ColorTemplate;
+  colorTemplate?: ColorTemplateType;
 }
 
 /**
- * 🎨 ГЛАВНАЯ INNGEST ФУНКЦИЯ: Полный цикл создания карусели
+ * ГЛАВНАЯ INNGEST ФУНКЦИЯ: Полный цикл создания карусели
  *
  * Этапы:
  * 1. 📝 Анализ темы и создание сценария

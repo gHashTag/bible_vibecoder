@@ -1,9 +1,11 @@
+import { InstagramCanvasService } from '../services/instagram-canvas.service';
+import { VibeCodingContentService } from '../services/vibecoding-content.service';
+import { OpenAiTtsService } from '../services/tts/openai-tts.service';
 import { Telegraf } from 'telegraf';
 import { CustomContext } from '../bot'; // Предполагается, что CustomContext будет экспортирован из bot.ts
 import { logger } from './logger'; // Предполагается, что logger существует
 import { I18n } from 'telegraf-i18n';
-import path from 'path';
-import { BotContext } from '../types';
+import { Config } from '../config';
 
 // Определяем интерфейс для зависимостей, чтобы обеспечить типобезопасность
 export interface AppDependencies {

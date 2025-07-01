@@ -1,19 +1,17 @@
 import { Telegraf, Context } from 'telegraf';
-import { VibeCodingVectorService } from '../services/vibecoding-vector.service';
 import { InstagramCanvasService } from '../services/instagram-canvas.service';
 import { VibeCodingContentService } from '../services/vibecoding-content.service';
 import { generateVibeCodingCarousel } from './functional-commands';
-import {
+import type {
   VibeCodingCommandResult,
   VibeCodingSearchOptions,
   VibeCodingStatsResult,
   CarouselSlide,
   ColorTemplate,
   LogType,
-} from '../types/index';
+} from '../types';
 import { logger } from '../utils/logger';
 
-const vectorService = new VibeCodingVectorService();
 const instagramCanvasService = new InstagramCanvasService();
 const vibeContentService = new VibeCodingContentService();
 

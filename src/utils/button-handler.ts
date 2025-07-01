@@ -139,9 +139,9 @@ export interface ButtonOptions {
  * @param options Опции для регистрации кнопки
  * @returns Функция-обработчик для регистрации в сцене
  */
-export function createButtonHandler<T extends BaseBotContext>(
+export function createButtonHandler(
   options: ButtonOptions
-): Middleware<T> {
+): Middleware<BaseBotContext> {
   const {
     id,
     handler,
@@ -169,7 +169,7 @@ export function createButtonHandler<T extends BaseBotContext>(
   };
 
   // Возвращаем функцию-обработчик для регистрации в сцене
-  return async (ctx: T) => {
+  return async (ctx: BaseBotContext) => {
     const buttonId = typeof id === 'string' ? id : id.toString();
     const userId = ctx.from?.id;
     const username = ctx.from?.username;
@@ -374,8 +374,8 @@ export function createButtonHandler<T extends BaseBotContext>(
  * @param scene Сцена, в которой нужно зарегистрировать обработчик
  * @param options Опции для регистрации кнопки
  */
-export function registerButton<T extends BaseBotContext>(
-  scene: Scenes.BaseScene<T>,
+export function registerButton(
+  scene: Scenes.BaseScene<BaseBotContext>,
   options: ButtonOptions
 ) {
   const handler = createButtonHandler(options);
@@ -400,8 +400,8 @@ export function registerButton<T extends BaseBotContext>(
  * @param buttonId Идентификатор кнопки
  * @param onCancel Функция для обработки отмены действия
  */
-function registerCancelHandler<T extends BaseBotContext>(
-  scene: Scenes.BaseScene<T>,
+function registerCancelHandler(
+  scene: Scenes.BaseScene<BaseBotContext>,
   buttonId: string,
   onCancel?: (ctx: BaseBotContext) => Promise<void>
 ) {
@@ -465,8 +465,8 @@ function registerCancelHandler<T extends BaseBotContext>(
  * @param scene Сцена, в которой нужно зарегистрировать обработчики
  * @param optionsArray Массив опций для регистрации кнопок
  */
-export function registerButtons<T extends BaseBotContext>(
-  scene: Scenes.BaseScene<T>,
+export function registerButtons(
+  scene: Scenes.BaseScene<BaseBotContext>,
   optionsArray: ButtonOptions[]
 ) {
   logger.info(
