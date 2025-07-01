@@ -5,168 +5,97 @@
  * форматированием и возможностью сохранения логов в файл или базу данных.
  */
 
-// Уровни логирования
-export enum LogLevel {
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error',
-  DEBUG = 'debug',
-}
+import { LogLevel, LogType, LogEntry } from '../types/index';
 
-// Типы логов
-export enum LogType {
-  SYSTEM = 'system',
-  BUSINESS_LOGIC = 'business_logic',
-  USER_ACTION = 'user_action',
-  DATABASE = 'database',
-  TELEGRAM_API = 'telegram_api',
-  ERROR = 'error',
-  EXTERNAL_SERVICE = 'external_service',
-  SCENE = 'scene',
-}
+/**
+ * 🕉️ Центральный логгер для всего приложения
+ */
+class Logger {
+  private logs: LogEntry[] = [];
+  private maxLogs = 1000;
 
-// Интерфейс для записи лога
-export interface LogEntry {
-  timestamp: string;
-  level: LogLevel;
-  message: string;
-  type?: LogType;
-  data?: any; // Ослабляем типизацию для гибкости
-  error?: Error;
-  userId?: number | string;
-  username?: string;
-}
-
-// Класс логгера
-export class Logger {
-  private static instance: Logger;
-  private logToConsole: boolean = true;
-  private logToFile: boolean = false;
-  private logToDatabase: boolean = false;
-  private minLevel: LogLevel = LogLevel.DEBUG;
-
-  // Приватный конструктор для синглтона
-  private constructor() {}
-
-  // Получение экземпляра логгера
-  public static getInstance(): Logger {
-    if (!Logger.instance) {
-      Logger.instance = new Logger();
-    }
-    return Logger.instance;
-  }
-
-  // Настройка логгера
-  public configure(options: {
-    logToConsole?: boolean;
-    logToFile?: boolean;
-    logToDatabase?: boolean;
-    minLevel?: LogLevel;
-  }) {
-    if (options.logToConsole !== undefined) {
-      this.logToConsole = options.logToConsole;
-    }
-    if (options.logToFile !== undefined) {
-      this.logToFile = options.logToFile;
-    }
-    if (options.logToDatabase !== undefined) {
-      this.logToDatabase = options.logToDatabase;
-    }
-    if (options.minLevel !== undefined) {
-      this.minLevel = options.minLevel;
-    }
-  }
-
-  // Логирование
-  public log(
-    level: LogLevel,
-    message: string,
-    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
-  ): void {
+  /**
+   * Основной метод логирования
+   */
+  private log(level: LogLevel | string, message: string, extra?: any): void {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
       message,
-      ...options,
+      type: extra?.type || LogType.SYSTEM,
+      userId: extra?.userId,
+      username: extra?.username,
+      error: extra?.error,
+      data: extra?.data,
     };
-    console.log(JSON.stringify(entry));
+
+    // Добавляем в массив логов
+    this.logs.push(entry);
+
+    // Ограничиваем размер массива
+    if (this.logs.length > this.maxLogs) {
+      this.logs = this.logs.slice(-this.maxLogs);
+    }
+
+    // Вывод в консоль
+    console.log(
+      `[${entry.timestamp}] ${level.toUpperCase()}: ${message}`,
+      extra?.data || ''
+    );
   }
 
-  // Проверка, нужно ли логировать
-  private shouldLog(level: LogLevel): boolean {
-    const levels = [
-      LogLevel.DEBUG,
-      LogLevel.INFO,
-      LogLevel.WARN,
-      LogLevel.ERROR,
-    ];
-
-    const minLevelIndex = levels.indexOf(this.minLevel);
-    const currentLevelIndex = levels.indexOf(level);
-
-    return currentLevelIndex >= minLevelIndex;
+  info(message: string, extra?: any): void {
+    this.log(LogLevel.INFO, message, extra);
   }
 
-  // Вспомогательные методы для разных уровней логирования
-
-  public debug(
-    message: string,
-    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
-  ): void {
-    this.log(LogLevel.DEBUG, message, options);
+  warn(message: string, extra?: any): void {
+    this.log(LogLevel.WARN, message, extra);
   }
 
-  public info(
-    message: string,
-    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
-  ): void {
-    this.log(LogLevel.INFO, message, options);
+  error(message: string, extra?: any): void {
+    this.log(LogLevel.ERROR, message, extra);
   }
 
-  public warn(
-    message: string,
-    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
-  ): void {
-    this.log(LogLevel.WARN, message, options);
+  debug(message: string, extra?: any): void {
+    this.log(LogLevel.DEBUG, message, extra);
   }
 
-  public error(
-    message: string,
-    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
-  ): void {
-    this.log(LogLevel.ERROR, message, options);
-  }
-
-  public fatal(
-    message: string,
-    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
-  ): void {
-    this.log(LogLevel.ERROR, message, options);
-    process.exit(1);
+  fatal(message: string, extra?: any): void {
+    this.log(LogLevel.ERROR, `FATAL: ${message}`, extra);
   }
 
   // Логирование действий пользователя
-  public userAction(
-    message: string,
-    options?: Omit<LogEntry, 'timestamp' | 'level' | 'type' | 'message'>
-  ) {
-    this.log(LogLevel.INFO, message, {
-      type: LogType.USER_ACTION,
-      ...options,
-    });
+  userAction(message: string, extra?: any): void {
+    this.log(LogLevel.INFO, message, { ...extra, type: LogType.USER_ACTION });
   }
 
   // Логирование действий бота
-  public botAction(
-    message: string,
-    options?: Omit<LogEntry, 'timestamp' | 'level' | 'type' | 'message'>
-  ) {
-    this.log(LogLevel.INFO, message, {
-      type: LogType.SYSTEM,
-      ...options,
-    });
+  botAction(message: string, extra?: any): void {
+    this.log(LogLevel.INFO, message, { ...extra, type: LogType.SYSTEM });
+  }
+
+  // Настройка логгера (заглушка для совместимости)
+  configure(_options: any): void {
+    // Заглушка для совместимости со старым API
+  }
+
+  /**
+   * Получить все логи
+   */
+  getLogs(): LogEntry[] {
+    return [...this.logs];
+  }
+
+  /**
+   * Очистить логи
+   */
+  clearLogs(): void {
+    this.logs = [];
   }
 }
 
-// Экспортируем экземпляр логгера
-export const logger = Logger.getInstance();
+export const logger = new Logger();
+
+// Реэкспорт типов для совместимости
+export { LogLevel, LogType };
+export type { LogEntry };

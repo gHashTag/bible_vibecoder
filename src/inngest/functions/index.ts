@@ -6,8 +6,9 @@
  */
 
 import { helloWorld } from './hello-world';
-import { generateCarousel } from './generate-carousel';
-import { vibeCodingBroadcast } from './vibecoding-broadcast';
+import { generateCarouselFunction } from './generate-carousel';
+import { generateResearchFunction } from './vibecoding-research';
+import { vibecodingBroadcastFunction } from './vibecoding-broadcast';
 import {
   vibeCodingResearch,
   vibeCodingQuickAnswer,
@@ -18,8 +19,9 @@ import {
  */
 export const functions = [
   helloWorld,
-  generateCarousel,
-  vibeCodingBroadcast,
+  generateCarouselFunction,
+  generateResearchFunction,
+  vibecodingBroadcastFunction,
   vibeCodingResearch,
   vibeCodingQuickAnswer,
 ];
@@ -29,8 +31,9 @@ export const functions = [
  */
 export {
   helloWorld,
-  generateCarousel,
-  vibeCodingBroadcast,
+  generateCarouselFunction,
+  generateResearchFunction,
+  vibecodingBroadcastFunction,
   vibeCodingResearch,
   vibeCodingQuickAnswer,
 };

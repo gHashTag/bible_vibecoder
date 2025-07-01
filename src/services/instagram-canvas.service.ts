@@ -1,16 +1,7 @@
 import nodeHtmlToImage from 'node-html-to-image';
 import path from 'path';
-import { CarouselSlide, CanvasConfig } from '../types';
+import { CarouselSlide, CanvasConfig, ColorTemplate } from '../types/index';
 import { logger, LogType } from '../utils/logger';
-
-/**
- * 🎨 Цветовые темплейты для карусели
- * Оставлен только идеальный Galaxy Spiral Blur темплейт
- */
-export enum ColorTemplate {
-  // 🌌 GALAXY SPIRAL BLUR - ЕДИНСТВЕННЫЙ ТЕМПЛЕЙТ
-  GALAXY_SPIRAL_BLUR = 'galaxy_spiral_blur',
-}
 
 /**
  * 🎨 Конфигурация цветовых темплейтов
@@ -50,7 +41,9 @@ export class InstagramCanvasService {
   /**
    * 🎨 Получить единственный идеальный цветовой темплейт
    */
-  public static getColorTemplates(): Record<ColorTemplate, TemplateDesign> {
+  public static getColorTemplates(): Partial<
+    Record<ColorTemplate, TemplateDesign>
+  > {
     return {
       // 🌌 ЕДИНСТВЕННЫЙ ИДЕАЛЬНЫЙ ТЕМПЛЕЙТ
       [ColorTemplate.GALAXY_SPIRAL_BLUR]: {

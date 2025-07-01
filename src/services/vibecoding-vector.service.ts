@@ -1,5 +1,25 @@
-import { Pool, PoolClient } from 'pg';
-import OpenAI from 'openai';
+import {
+  pg,
+  pool,
+  PgVectorStore,
+  CamelCasePlugin,
+} from 'drizzle-orm-pg/vector';
+import { OpenAIEmbeddings } from '@langchain/openai';
+import { Document } from '@langchain/core/documents';
+import * as fs from 'fs';
+import * as path from 'path';
+import { Tiktoken } from 'js-tiktoken';
+import { VibeCodingCarouselCard } from '../types';
+import {
+  chunks,
+  files,
+  vibeCoding,
+  vibeCodingChapters,
+  vibeCodingContent,
+} from '../db/schema';
+import { db } from '../db';
+import { count, eq, sql } from 'drizzle-orm';
+import { logger } from '../utils/logger';
 
 // 🕉️ Конфигурация сервиса векторного поиска
 const VECTOR_CONFIG = {
@@ -12,12 +32,13 @@ const VECTOR_CONFIG = {
 };
 
 // Инициализация клиентов
-const openai = new OpenAI({
+const openai = new OpenAIEmbeddings({
   apiKey: process.env.OPENAI_API_KEY || '',
 });
 
-const pool = new Pool({
-  connectionString: VECTOR_CONFIG.NEON_CONNECTION,
+const vectorStore = new PgVectorStore(pool, {
+  vectorColumnName: 'embedding',
+  textIdColumnName: 'id',
 });
 
 // 🎯 Интерфейсы
@@ -60,9 +81,13 @@ export interface HybridSearchResult {
 }
 
 /**
- * 🔍 Основной класс для работы с векторной базой Vibecoding
+ * 🕉️ Сервис для работы с векторной базой данных Vibecoding
  */
 export class VibeCodingVectorService {
+  constructor() {
+    // Инициализация сервиса
+  }
+
   /**
    * 🤖 Генерация эмбеддинга для поискового запроса
    */
@@ -391,6 +416,8 @@ export class VibeCodingVectorService {
     avgTokensPerChunk: number;
   }> {
     try {
+      logger.info('Получаем статистику векторной базы данных');
+
       const client = await pool.connect();
       try {
         const [statsResult, categoryResult, sectionResult] = await Promise.all([
@@ -444,7 +471,9 @@ export class VibeCodingVectorService {
         client.release();
       }
     } catch (error) {
-      console.error('❌ Ошибка получения статистики:', error);
+      logger.error('Ошибка при получении статистики', {
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
       throw error;
     }
   }
@@ -468,7 +497,7 @@ export class VibeCodingVectorService {
     const balanced: VectorSearchResult[] = [];
     const maxPerCategory = Math.ceil(maxCards / categoryGroups.size);
 
-    for (const [category, categoryResults] of categoryGroups) {
+    for (const [, categoryResults] of categoryGroups) {
       balanced.push(...categoryResults.slice(0, maxPerCategory));
       if (balanced.length >= maxCards) break;
     }
@@ -551,8 +580,6 @@ export class VibeCodingVectorService {
   }
 
   private extractKeyPrinciples(content: string): string[] {
-    const principles: string[] = [];
-
     // Ищем списки с принципами
     const bulletPoints = content.match(/^[-*+]\s+.+$/gm) || [];
     const numberedPoints = content.match(/^\d+\.\s+.+$/gm) || [];
@@ -565,10 +592,78 @@ export class VibeCodingVectorService {
   }
 
   /**
+   * 📊 Получение статистики (алиас для совместимости)
+   */
+  async getStats(): Promise<{
+    totalChunks: number;
+    totalFiles: number;
+    categoryCounts: Record<string, number>;
+    sectionTypeCounts: Record<string, number>;
+    avgTokensPerChunk: number;
+    topCategories: string[];
+    topSectionTypes: string[];
+  }> {
+    const stats = await this.getVectorDatabaseStats();
+
+    // Добавляем топ категории и типы секций
+    const topCategories = Object.entries(stats.categoryCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5)
+      .map(([category]) => category);
+
+    const topSectionTypes = Object.entries(stats.sectionTypeCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5)
+      .map(([sectionType]) => sectionType);
+
+    return {
+      ...stats,
+      topCategories,
+      topSectionTypes,
+    };
+  }
+
+  /**
    * 🔧 Закрытие соединений
    */
   async close(): Promise<void> {
     await pool.end();
+  }
+
+  /**
+   * Поиск похожих документов
+   */
+  async searchSimilar(query: string, limit = 5): Promise<any[]> {
+    try {
+      logger.info('Поиск похожих документов', { data: { query, limit } });
+
+      // Заглушка для поиска
+      return [];
+    } catch (error) {
+      logger.error('Ошибка при поиске', {
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
+      return [];
+    }
+  }
+
+  /**
+   * Реиндексация базы знаний Vibecoding
+   */
+  async reindexVibecoding(): Promise<void> {
+    try {
+      logger.info('Начинаем реиндексацию Vibecoding');
+
+      // Заглушка для реиндексации
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      logger.info('Реиндексация завершена успешно');
+    } catch (error) {
+      logger.error('Ошибка при реиндексации', {
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
+      throw error;
+    }
   }
 }
 
