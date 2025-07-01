@@ -2,7 +2,7 @@ import { Telegraf, Context } from 'telegraf';
 import { InstagramCanvasService } from '../services/instagram-canvas.service';
 import { VibeCodingContentService } from '../services/vibecoding-content.service';
 import { generateVibeCodingCarousel } from './functional-commands';
-import type {
+import {
   VibeCodingCommandResult,
   VibeCodingSearchOptions,
   VibeCodingStatsResult,

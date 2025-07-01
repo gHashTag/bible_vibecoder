@@ -8,10 +8,9 @@ import {
   HttpLink,
   ApolloLink,
   from,
-  onError,
-  setContext,
-  createHttpLink,
 } from '@apollo/client';
+import { onError } from '@apollo/client/link/error';
+// import { setContext } from "@apollo/client/link/context";
 import { config } from '../config';
 import { logger, LogType } from '../utils/logger';
 import { gql } from '@apollo/client';

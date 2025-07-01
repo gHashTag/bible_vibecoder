@@ -38,6 +38,7 @@ export interface LogEntry {
 export interface BotContext extends Context {
   scene: any;
   wizard: any;
+  session: any;
 }
 
 // Алиас для совместимости
