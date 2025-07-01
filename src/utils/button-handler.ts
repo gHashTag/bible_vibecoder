@@ -8,7 +8,7 @@
 import { Scenes } from 'telegraf';
 import { logger, LogType } from './logger';
 import type { Middleware } from 'telegraf';
-import { BaseBotContext } from '../types';
+import { BaseBotContext, BotContext } from '../types';
 
 /**
  * Тип обработчика кнопки
@@ -802,4 +802,89 @@ export function registerNestedMenu(
       },
     });
   };
+}
+
+/**
+ * @interface DynamicButton
+ * @description Описывает структуру динамической кнопки.
+ *
+ * @property {string | ((ctx: T) => string)} text - Текст кнопки. Может быть строкой или функцией, возвращающей строку.
+ * @property {string} action - Уникальный идентификатор действия (callback_data).
+ * @property {(ctx: T) => Promise<void>} handler - Асинхронный обработчик, который будет вызван при нажатии на кнопку.
+ * @property {(ctx: T) => boolean} [condition] - Опциональная функция, определяющая, должна ли кнопка отображаться.
+ */
+interface DynamicButton<T extends BotContext> {
+  text: string | ((ctx: T) => string);
+  action: string;
+  handler: (ctx: T) => Promise<void>;
+  condition?: (ctx: T) => boolean;
+}
+
+/**
+ * @class ButtonHandler
+ * @description Класс для управления динамическими кнопками в Telegram боте.
+ * Позволяет добавлять кнопки, обрабатывать их нажатия и генерировать клавиатуру.
+ */
+export class ButtonHandler<T extends BotContext> {
+  private buttons: Map<string, DynamicButton<T>>;
+
+  constructor() {
+    this.buttons = new Map<string, DynamicButton<T>>();
+  }
+
+  /**
+   * Добавляет новую кнопку в обработчик.
+   * @param {DynamicButton<T>} button - Объект кнопки для добавления.
+   */
+  public addButton(button: DynamicButton<T>): void {
+    this.buttons.set(button.action, button);
+  }
+
+  /**
+   * Обрабатывает нажатие на кнопку по ее идентификатору действия.
+   * @param {string} action - Идентификатор действия кнопки.
+   * @param {T} ctx - Контекст Telegraf.
+   */
+  public async handleAction(action: string, ctx: T): Promise<void> {
+    const button = this.buttons.get(action);
+
+    if (button) {
+      if (ctx.session && 'buttonClicked' in ctx.session) {
+        (ctx.session as any).buttonClicked = action;
+      }
+      await button.handler(ctx);
+    } else {
+      console.warn(`No handler found for action: ${action}`);
+      await ctx.answerCbQuery('Действие не найдено').catch(() => {});
+    }
+  }
+
+  /**
+   * Возвращает клавиатуру с кнопками, которые удовлетворяют условиям.
+   * @param {T} ctx - Контекст Telegraf.
+   * @returns {any[][]} - Массив кнопок для Telegraf (массив массивов).
+   */
+  public getKeyboard(ctx: T): any[][] {
+    const keyboard: any[][] = [];
+    const row: any[] = [];
+
+    this.buttons.forEach(button => {
+      if (!button.condition || button.condition(ctx)) {
+        const buttonText =
+          typeof button.text === 'function' ? button.text(ctx) : button.text;
+        row.push({ text: buttonText, callback_data: button.action });
+        if (row.length >= 2) {
+          // Предполагаем 2 колонки
+          keyboard.push([...row]);
+          row.length = 0;
+        }
+      }
+    });
+
+    if (row.length > 0) {
+      keyboard.push(row);
+    }
+
+    return keyboard;
+  }
 }
