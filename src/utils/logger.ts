@@ -11,13 +11,13 @@ import { LogLevel, LogType, LogEntry } from '../types/index';
  * 🕉️ Центральный логгер для всего приложения
  */
 class Logger {
-  private logs: LogEntry[] = [];
-  private maxLogs = 1000;
+  public logs: LogEntry[] = [];
+  public maxLogs = 1000;
 
   /**
    * Основной метод логирования
    */
-  private log(level: LogLevel | string, message: string, extra?: any): void {
+  public log(level: LogLevel | string, message: string, extra?: any): void {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
