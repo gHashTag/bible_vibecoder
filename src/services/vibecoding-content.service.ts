@@ -1,6 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { VibeCodingContent, CarouselSlide } from '../types/index';
+import { logger } from '../utils/logger';
+import { spawn } from 'child_process';
+import { Telegraf } from 'telegraf';
+import { I18n } from 'telegraf-i18n';
+import { BotContext } from '../types';
 
 export enum ContentType {
   TEXT = 'text',
@@ -80,20 +85,19 @@ export class VibeCodingContentService {
    */
   async analyzeForCarousel(
     topic: string,
-    searchResults: Array<{
-      file: string;
-      content: string;
-      relevanceScore: number;
-      category: string;
-    }>
+    searchResults: any[]
   ): Promise<VibeCodingContent> {
-    console.log(`🔍 Анализируем контент для темы: ${topic}`);
+    logger.info('Анализируем контент для карусели', {
+      data: { topic },
+    });
+
+    // Объединяем весь релевантный контент
+    const combinedContent = searchResults
+      .map(result => result.content)
+      .join('\n\n');
 
     // Генерируем слайды на основе контента
-    const slides = this.generateSlidesFromContent(
-      searchResults.map(r => r.content).join('\n\n'),
-      topic
-    );
+    const slides = this.generateSlidesFromContent(combinedContent, topic);
 
     return {
       title: `Карусель: ${topic}`,

@@ -1,8 +1,9 @@
-import { OpenAI } from 'openai';
+import OpenAI from 'openai';
 import NodeCache from 'node-cache';
-import crypto from 'crypto';
-import fs from 'fs/promises';
+import * as crypto from 'crypto';
+import { promises as fs } from 'fs';
 import path from 'path';
+import { logger } from '../../utils/logger';
 import { TTSService } from './tts.service.interface';
 import {
   TTSOptions,

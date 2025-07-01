@@ -20,8 +20,15 @@ export default defineConfig({
     reporters: ['default', 'html'],
     outputFile: 'html/index.html',
     coverage: {
-      reporter: ['text', 'json', 'html'],
-      exclude: ['node_modules/', 'src/__tests__/', 'src/types.ts'],
+      provider: 'v8',
+      reporter: ['html', 'text', 'json'],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/dist_backup/**',
+        '**/.{idea,git,cache,output,temp}/**',
+        '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*',
+      ],
     },
   },
   resolve: {

@@ -35,6 +35,20 @@ const ResearchAnalysisSchema = z.object({
 export type ResearchAnalysis = z.infer<typeof ResearchAnalysisSchema>;
 
 /**
+ * 📊 Тип для результатов исследования
+ */
+export interface ResearchAnalysis {
+  topic: string;
+  summary: string;
+  keyInsights: string[];
+  trends: string[];
+  recommendations: string[];
+  sources: { title: string; url: string; snippet: string }[];
+  relatedTopics: string[];
+  confidenceLevel: number;
+}
+
+/**
  * 🌐 Tool для настоящего веб-поиска
  */
 const webSearchTool = tool({

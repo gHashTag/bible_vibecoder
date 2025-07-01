@@ -2,9 +2,6 @@ import nodeHtmlToImage from 'node-html-to-image';
 import path from 'path';
 import { CarouselSlide, CanvasConfig, ColorTemplate } from '../types/index';
 import { logger, LogType } from '../utils/logger';
-import { VibeCodingContent, VibeCodingCarouselCard } from '../types';
-
-export type ColorTemplate = 'galaxy' | 'spiritual' | 'modern' | 'light';
 
 /**
  * 🎨 Конфигурация цветовых темплейтов

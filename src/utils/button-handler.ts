@@ -866,7 +866,7 @@ export class ButtonHandler<T extends BotContext> {
    */
   public getKeyboard(ctx: T): any[][] {
     const keyboard: any[][] = [];
-    const row: any[] = [];
+    let row: any[] = [];
 
     this.buttons.forEach(button => {
       if (!button.condition || button.condition(ctx)) {
@@ -875,8 +875,8 @@ export class ButtonHandler<T extends BotContext> {
         row.push({ text: buttonText, callback_data: button.action });
         if (row.length >= 2) {
           // Предполагаем 2 колонки
-          keyboard.push([...row]);
-          row.length = 0;
+          keyboard.push(row);
+          row = [];
         }
       }
     });

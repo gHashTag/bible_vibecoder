@@ -6,6 +6,10 @@
  */
 
 import { inngest } from '../client';
+import { helloWorld } from './hello-world';
+import { generateCarousel } from './generate-carousel';
+import { runVibecodingBroadcast } from './vibecoding-broadcast';
+import { runVibecodingResearch } from './vibecoding-research';
 
 /**
  * Массив всех Inngest функций для регистрации
@@ -30,12 +34,15 @@ export {
 /**
  * Экспорт событий и типов
  */
-export {
-  HELLO_WORLD_EVENT,
-  sendHelloWorldEvent,
-  type HelloWorldEventData,
-  type HelloWorldResult,
+export type {
+  HelloWorldInput,
+  HelloWorldOutput,
+  HelloWorldResult,
 } from './hello-world';
+
+export type { GenerateCarouselInput } from './generate-carousel';
+export type { VibecodingBroadcastInput } from './vibecoding-broadcast';
+export type { VibecodingResearchInput } from './vibecoding-research';
 
 /**
  * Экспорт по умолчанию для удобства

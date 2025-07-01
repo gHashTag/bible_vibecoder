@@ -66,7 +66,7 @@ export async function createServer() {
         if (url.pathname.startsWith('/preview/')) {
           const filename = url.pathname.replace('/preview/', '');
           const previewPath = `${process.cwd()}/template-previews/${filename}`;
-          
+
           try {
             const file = Bun.file(previewPath);
             return new Response(file, {
