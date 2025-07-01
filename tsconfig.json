@@ -41,12 +41,10 @@
     "isolatedModules": true,
     "outDir": "./dist"
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": [
-    "node_modules", 
-    "src/modules/digitalAvatarBody", 
+    "node_modules",
     "dist",
-    "scripts/test-vibecoding-broadcast-final.ts",
-    "test-vibecoding-types.ts"
+    "scripts"
   ]
 }
