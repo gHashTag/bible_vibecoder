@@ -1,324 +1,79 @@
-import { Telegraf, Context } from 'telegraf';
-import { InstagramCanvasService } from '../services/instagram-canvas.service';
-import { VibeCodingContentService } from '../services/vibecoding-content.service';
-import { generateVibeCodingCarousel } from './functional-commands';
+import { Context } from 'telegraf';
 import {
-  VibeCodingCommandResult,
-  VibeCodingSearchOptions,
-  VibeCodingStatsResult,
-  CarouselSlide,
-  ColorTemplate,
-  LogType,
-} from '../types';
-import { logger } from '../utils/logger';
+  generateVibeCodingCarousel,
+  TemplateDesign,
+} from '../services/carousel-generator.service';
+import { VibeCodingContentService } from '../services/vibecoding-content.service';
+import { logger, LogType } from '../utils/logger';
 
-const instagramCanvasService = new InstagramCanvasService();
-const vibeContentService = new VibeCodingContentService();
+export const handleCarouselCommand = async (ctx: Context) => {
+  const text = (ctx.message as any)?.text;
+  const topic = text.split(' ').slice(1).join(' ').trim();
 
-/**
- * 🔍 Поиск по базе знаний Vibecoding
- */
-async function searchVibecoding(
-  options: VibeCodingSearchOptions
-): Promise<VibeCodingCommandResult> {
-  try {
-    logger.info('Начинаем поиск по Vibecoding', {
-      data: { query: options.query, searchType: options.searchType },
-    });
-
-    // Заглушка для поиска
-    const results = await vectorService.searchSimilar(
-      options.query,
-      options.limit || 5
-    );
-
-    return {
-      success: true,
-      message: `Найдено ${results.length} результатов`,
-      data: { results },
-      carouselCards: [],
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error('Ошибка при поиске Vibecoding', {
-      error: error instanceof Error ? error : new Error(errorMessage),
-    });
-
-    return {
-      success: false,
-      error: errorMessage,
-      data: {},
-      carouselCards: [],
-    };
+  if (!topic) {
+    await ctx.reply('Пожалуйста, укажите тему для карусели.');
+    return;
   }
-}
 
-/**
- * 🎨 Быстрая генерация карусели по запросу (без детального поиска)
- */
-export async function generateVibeCodingCarousel(
-  query: string,
-  options: {
-    maxCards?: number;
-    style?: 'minimalist' | 'vibrant' | 'dark' | 'gradient';
-    categories?: string[];
-    includeCodeExamples?: boolean;
-  } = {}
-) {
+  await ctx.reply(`🎨 Генерирую карусель на тему "${topic}"...`);
+
   try {
-    console.log(
-      `🎨 Быстрая генерация карусели Vibecoding для запроса: "${query}"`
-    );
+    const result = await generateVibeCodingCarousel(topic, {});
 
-    const { maxCards = 5 } = options;
-
-    // Выполняем гибридный поиск
-    const hybridResult = await vectorService.hybridSearch(query, {
-      limit: Math.ceil(maxCards * 1.5), // Берем больше для лучшего отбора
-      categories: options.categories,
-    });
-
-    if (hybridResult.combinedResults.length === 0) {
-      return {
-        success: false,
-        message: 'По вашему запросу ничего не найдено в Библии Vibecoding',
-        query,
-      };
+    if (result.success && result.data) {
+      // For now, just confirming generation
+      await ctx.reply(
+        `✅ Карусель успешно сгенерирована с шаблоном ${result.data.colorTemplate}!`
+      );
+    } else {
+      await ctx.reply(`❌ Ошибка генерации: ${result.error}`);
     }
-
-    // Генерируем карточки
-    const carouselCards = await vectorService.generateCarouselCards(
-      hybridResult.combinedResults,
-      {
-        maxCards,
-        includeCodeExamples: options.includeCodeExamples ?? true,
-        groupByCategory: true,
-      }
-    );
-
-    // Конвертируем VibeCoding карточки в CarouselSlide[]
-    const slides: CarouselSlide[] = carouselCards.map(
-      (card: any, index: number) => ({
-        order: index + 1,
-        type:
-          index === 0
-            ? 'title'
-            : index === carouselCards.length - 1
-              ? 'summary'
-              : 'practice',
-        title: `${getCategoryEmoji(card.category)} ${card.title}`,
-        content: card.summary,
-      })
-    );
-
-    // Используем только Galaxy Spiral Blur
-    const colorTemplate = ColorTemplate.GALAXY_SPIRAL_BLUR;
-
-    // Используем существующую функцию generateCarouselImages
-    const imageBuffers = await instagramCanvasService.generateCarouselImages(
-      slides,
-      undefined, // используем дефолтный config
-      colorTemplate
-    );
-
-    // Конвертируем Buffer[] в base64 строки для совместимости
-    const carouselImages = imageBuffers.map(
-      (buffer: Buffer) => `data:image/png;base64,${buffer.toString('base64')}`
-    );
-
-    console.log(
-      `✅ Генерация завершена: ${carouselImages.length} карточек создано`
-    );
-
-    return {
-      success: true,
-      query,
-      carouselCards: carouselCards.slice(0, carouselImages.length),
-      carouselImages,
-      searchStats: hybridResult.searchStats,
-      message: `Создана карусель из ${carouselImages.length} карточек по теме "${query}"`,
-    };
   } catch (error) {
-    console.error('💥 Ошибка быстрой генерации карусели:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Неизвестная ошибка',
-      query,
-    };
-  }
-}
-
-/**
- * 🎯 Получение эмодзи для категории
- */
-function getCategoryEmoji(category: string): string {
-  const categoryEmojis: Record<string, string> = {
-    fundamentals: '🏛️',
-    practices: '🧘‍♂️',
-    tools: '🛠️',
-    development: '🚀',
-    analytics: '📊',
-    archive: '📚',
-    main_book: '📖',
-    philosophy: '🕉️',
-    general: '✨',
-  };
-  return categoryEmojis[category] || '✨';
-}
-
-/**
- * 🔄 Переиндексация векторной базы Vibecoding
- */
-export async function reindexVibeCoding(): Promise<VibeCodingCommandResult> {
-  try {
-    logger.info('🔄 Starting VibeCoding knowledge base reindexing', {
-      type: LogType.BUSINESS_LOGIC,
-    });
-
-    // Запуск векторизации через внешний скрипт
-    const { execSync } = await import('child_process');
-    execSync('bun run scripts/vectorize-vibecoding.ts', { stdio: 'inherit' });
-
-    logger.info('✅ VibeCoding reindexing completed successfully');
-
-    return {
-      success: true,
-      message: 'VibeCoding knowledge base has been successfully reindexed',
-    };
-  } catch (error) {
-    logger.error('❌ Error during VibeCoding reindexing', {
+    logger.error('Failed to handle /carousel command', {
       type: LogType.ERROR,
-      error: error instanceof Error ? error : new Error(String(error)),
+      error,
     });
-
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'Unknown error during reindexing',
-    };
+    await ctx.reply('Произошла критическая ошибка при генерации карусели.');
   }
-}
+};
 
-/**
- * 📊 Получение статистики векторной базы знаний
- */
-export type { VibeCodingSearchOptions, VibeCodingStatsResult };
+export const handleAskCommand = async (ctx: Context) => {
+  const text = (ctx.message as any)?.text;
+  const question = text.split(' ').slice(1).join(' ').trim();
 
-// Функция для получения статистики
-export async function getVibeCodingStats(): Promise<VibeCodingStatsResult> {
+  if (!question) {
+    await ctx.reply('Пожалуйста, задайте вопрос после команды /ask.');
+    return;
+  }
+
+  await ctx.reply(`💡 Ищу ответ на вопрос: "${question}"...`);
   try {
-    logger.info('📊 Получение статистики VibeCoding');
+    const vibeContentService = new VibeCodingContentService();
+    const results = await vibeContentService.search({ query: question });
 
-    // Получаем статистику от векторного сервиса
-    const stats = await vectorService.getStats();
-
-    logger.info('✅ Статистика VibeCoding получена успешно');
-
-    // Конструируем результат с правильной типизацией
-    const result: VibeCodingStatsResult = {
-      totalChunks: stats.totalChunks || 0,
-      totalFiles: stats.totalFiles || 0,
-      categoryCounts: stats.categoryCounts || {},
-      sectionTypeCounts: stats.sectionTypeCounts || {},
-      avgTokensPerChunk: stats.avgTokensPerChunk || 0,
-      topCategories: stats.topCategories || [],
-      topSectionTypes: stats.topSectionTypes || [],
-    };
-
-    return result;
+    if (results.length > 0) {
+      await ctx.replyWithMarkdown(
+        `**Ответ:**\n\n${results[0].content}\n\n*Источник: ${results[0].source}*`
+      );
+    } else {
+      await ctx.reply('К сожалению, я не смог найти ответ на ваш вопрос.');
+    }
   } catch (error) {
-    logger.error('❌ Ошибка получения статистики VibeCoding', {
-      error: error instanceof Error ? error : new Error(String(error)),
+    logger.error('Failed to handle /ask command', {
+      type: LogType.ERROR,
+      error,
     });
-
-    // Возвращаем пустую статистику в случае ошибки
-    return {
-      totalChunks: 0,
-      totalFiles: 0,
-      categoryCounts: {},
-      sectionTypeCounts: {},
-      avgTokensPerChunk: 0,
-      topCategories: [],
-      topSectionTypes: [],
-    };
+    await ctx.reply('Произошла ошибка при поиске ответа.');
   }
-}
+};
 
-/**
- * 🤖 Настройка команд для работы с Vibecoding
- */
-export function setupVibeCodingCommands(bot: Telegraf<Context>) {
-  // Команда поиска
-  bot.command('vibecoding_search', async ctx => {
-    const args = ctx.message.text.split(' ').slice(1);
-    const query = args.join(' ');
+export const handleResearchCommand = async (ctx: Context) => {
+  await ctx.reply('Команда /research временно отключена.');
+};
 
-    if (!query) {
-      await ctx.reply(
-        '❌ Укажите поисковый запрос: /vibecoding_search [запрос]'
-      );
-      return;
-    }
-
-    const result = await searchVibecoding({
-      query,
-      searchType: 'hybrid',
-      limit: 5,
-    });
-
-    if (result.success) {
-      await ctx.reply(
-        `✅ ${result.message}\n\nРезультаты:\n${JSON.stringify(result.data, null, 2)}`
-      );
-    } else {
-      await ctx.reply(`❌ ${result.error}`);
-    }
-  });
-
-  // Команда реиндексации
-  bot.command('vibecoding_reindex', async ctx => {
-    await ctx.reply('🔄 Начинаю реиндексацию базы знаний Vibecoding...');
-
-    const result = await reindexVibeCoding();
-
-    if (result.success) {
-      await ctx.reply(`✅ ${result.message}`);
-    } else {
-      await ctx.reply(`❌ ${result.error}`);
-    }
-  });
-
-  // Команда статистики
-  bot.command('vibecoding_stats', async ctx => {
-    await ctx.reply('📊 Получаю статистику базы знаний...');
-
-    try {
-      const stats = await getVibeCodingStats();
-      const message = `📊 Статистика VibeCoding:
-- Всего чанков: ${stats.totalChunks}
-- Всего файлов: ${stats.totalFiles}
-- Средний размер чанка: ${stats.avgTokensPerChunk} токенов
-- Топ категории: ${stats.topCategories.join(', ')}
-- Топ типы секций: ${stats.topSectionTypes.join(', ')}`;
-
-      await ctx.reply(message);
-    } catch (error) {
-      await ctx.reply('❌ Ошибка получения статистики');
-    }
-  });
-}
-
-// Команды для системных тестов
-export const handleVibecodingSystemTestCommand =
-  async (): Promise<VibeCodingCommandResult> => {
-    return { success: true, message: 'System test passed' };
-  };
-
-export const handleVibecodingCommand =
-  async (): Promise<VibeCodingCommandResult> => {
-    return { success: true, message: 'Vibecoding command executed' };
-  };
-
-export { searchVibecoding };
+export const setupVibeCodingCommands = (bot: any) => {
+  // These commands are now defined in functional-commands.ts
+  // bot.command('carousel', handleCarouselCommand);
+  bot.command('ask', handleAskCommand);
+  bot.command('research', handleResearchCommand);
+};

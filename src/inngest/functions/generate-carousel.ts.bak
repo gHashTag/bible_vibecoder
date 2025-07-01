@@ -1,5 +1,15 @@
+/**
+ * Inngest Function: Generate Instagram Carousel
+ *
+ * Основная функция для генерации Instagram карусели из VIBECODING документации.
+ * Обрабатывает полный workflow: анализ контента → генерация слайдов → рендеринг → отправка.
+ */
+
 import { inngest } from '../../inngest/client';
-import { generateVibeCodingCarousel } from '../../services/carousel-generator.service';
+import {
+  generateVibeCodingCarousel,
+  TemplateDesign,
+} from '../../services/carousel-generator.service';
 import { ColorTemplate } from '../../types';
 import { logger, LogType } from '../../utils/logger';
 import { InstagramCanvasService } from '../../services/instagram-canvas.service';
@@ -16,8 +26,7 @@ export const generateCarousel = inngest.createFunction(
   { id: 'generate-carousel-from-topic', name: 'Generate Carousel from Topic' },
   { event: 'carousel/generate.request' },
   async ({ event, step }) => {
-    const { topic, telegramUserId, colorTemplate } =
-      event.data as GenerateCarouselInput;
+    const { topic, telegramUserId, colorTemplate } = event.data;
     logger.info('Received job to generate carousel', {
       type: LogType.INNGEST_JOB,
       data: event.data,
@@ -32,16 +41,12 @@ export const generateCarousel = inngest.createFunction(
         });
       });
 
-      if (
-        result.success &&
-        result.data?.cards &&
-        result.data.cards.length > 0
-      ) {
+      if (result.success && result.data?.cards) {
         const instagramCanvasService = new InstagramCanvasService();
         const imageBuffer = await step.run('generate-image-buffer', () => {
           return instagramCanvasService.generateCarousel(
             result.data!.cards,
-            result.data!.colorTemplate
+            result.data!.colorTemplate as any // Cast needed for service
           );
         });
 
@@ -54,9 +59,10 @@ export const generateCarousel = inngest.createFunction(
           type: LogType.SUCCESS,
         });
       } else {
-        const errorMessage =
-          result.error || 'Не удалось сгенерировать контент для карусели.';
-        await bot.telegram.sendMessage(telegramUserId, `❌ ${errorMessage}`);
+        await bot.telegram.sendMessage(
+          telegramUserId,
+          `❌ Не удалось сгенерировать контент для карусели. ${result.error}`
+        );
       }
     } catch (error) {
       logger.error('Error in generateCarousel function', {
@@ -65,7 +71,7 @@ export const generateCarousel = inngest.createFunction(
       });
       await bot.telegram.sendMessage(
         telegramUserId,
-        'Произошла критическая ошибка при создании вашей карусели.'
+        'Произошла критическая ошибка при создании вашей карусели. Мы уже разбираемся.'
       );
       throw error;
     }

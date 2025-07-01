@@ -5,19 +5,34 @@
  * Экспортирует все функции для регистрации в сервере.
  */
 
+import { serve } from 'inngest/bun';
+import { inngest } from '../client';
+
+// Core Functions
 import { helloWorld } from './hello-world';
 import { generateCarousel } from './generate-carousel';
-import { vibecodingBroadcastFunction } from './vibecoding-broadcast';
 import { vibeCodingResearch } from './vibecoding-research';
+import { vibecodingBroadcastFunction } from './vibecoding-broadcast';
+// import { textToSpeech } from './text-to-speech'; // Example, can be added later
+
+// Helper Functions & Types
+// Note: These are not Inngest functions but can be used by them.
+export * from '../../utils/logger';
+export * from '../../services/instagram-canvas.service';
+export * from '../../services/vibecoding-content.service';
 
 /**
  * Массив всех Inngest функций для регистрации
  */
-export const functions = [
+const functions = [
+  // Core
   helloWorld,
   generateCarousel,
-  vibecodingBroadcastFunction,
   vibeCodingResearch,
+  vibecodingBroadcastFunction,
+
+  // Utilities, if they were Inngest functions
+  // textToSpeech,
 ];
 
 /**
@@ -26,8 +41,8 @@ export const functions = [
 export {
   helloWorld,
   generateCarousel,
-  vibecodingBroadcastFunction,
   vibeCodingResearch,
+  vibecodingBroadcastFunction,
 };
 
 /**
@@ -35,9 +50,12 @@ export {
  */
 export type { HelloWorldResult } from './hello-world';
 
-export type { GenerateCarouselInput } from './generate-carousel';
-
 /**
  * Экспорт по умолчанию для удобства
  */
 export default functions;
+
+/**
+ * Serve the functions
+ */
+export const server = serve({ client: inngest, functions });

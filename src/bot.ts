@@ -6,6 +6,9 @@ import { User } from './schemas';
 import { errorHandler } from './middlewares/error-handler';
 import { config } from './config';
 import { setupCommands } from './commands';
+import { setupFunctionalCommands } from './commands/functional-commands';
+import { setupVibeCodingCommands } from './commands/vibecoding-commands';
+import { BotContext } from './types';
 
 // --- Типы Контекста и Сессии ---
 export interface SessionData
@@ -175,24 +178,11 @@ async function startBot() {
 
   bot.use(ensureUserMiddleware);
 
-  // 🕉️ Подключаем НОВЫЕ functional commands
-  import('./commands/functional-commands.js')
-    .then(({ setupFunctionalCommands }) => {
-      setupFunctionalCommands(bot);
-      logger.info('✅ Functional commands loaded successfully', {
-        type: LogType.SYSTEM,
-      });
-    })
-    .catch(error => {
-      logger.error('❌ Failed to load functional commands', {
-        error: error instanceof Error ? error : new Error(String(error)),
-        type: LogType.SYSTEM,
-      });
-      // Fallback to old commands
-      setupCommands(bot);
-    });
+  // 4. Регистрация команд
+  setupFunctionalCommands(bot);
+  setupVibeCodingCommands(bot);
 
-  bot.catch((err: any, ctx: CustomContext) => {
+  bot.catch((err: any, ctx: BotContext) => {
     errorHandler(err, ctx);
   });
   logger.info('Telegraf global error handler registered.');
