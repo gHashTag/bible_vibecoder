@@ -34,8 +34,37 @@ app.use(
 // Telegram webhook
 // Устанавливаем вебхук только в окружении 'production'
 if (process.env.NODE_ENV === 'production') {
-  app.use(bot.webhookCallback('/secret-path'));
-  bot.telegram.setWebhook(`${config.WEBHOOK_DOMAIN}/secret-path`);
+  // Railway автоматически предоставляет URL через RAILWAY_STATIC_URL
+  const webhookDomain = process.env.RAILWAY_STATIC_URL 
+    ? `https://${process.env.RAILWAY_STATIC_URL}`
+    : config.WEBHOOK_DOMAIN;
+  
+  if (!webhookDomain) {
+    logger.error('WEBHOOK_DOMAIN or RAILWAY_STATIC_URL not set. Cannot configure webhook.', { 
+      type: LogType.ERROR 
+    });
+    process.exit(1);
+  }
+
+  const webhookPath = '/secret-path';
+  const webhookUrl = `${webhookDomain}${webhookPath}`;
+  
+  app.use(bot.webhookCallback(webhookPath));
+  
+  // Устанавливаем webhook с retry логикой
+  bot.telegram.setWebhook(webhookUrl)
+    .then(() => {
+      logger.info(`Webhook successfully set to: ${webhookUrl}`, { 
+        type: LogType.SYSTEM 
+      });
+    })
+    .catch((error) => {
+      logger.error(`Failed to set webhook: ${error.message}`, { 
+        type: LogType.ERROR 
+      });
+      process.exit(1);
+    });
+    
   logger.info('Bot is running in webhook mode', { type: LogType.SYSTEM });
 } else {
   logger.info('Bot is running in polling mode', { type: LogType.SYSTEM });
