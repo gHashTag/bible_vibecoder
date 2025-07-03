@@ -42,7 +42,7 @@
     "@types/dotenv": "^8.2.0",
     "@types/node": "^20.14.10",
     "@types/pg": "^8.11.6",
-    "drizzle-kit": "^0.21.4",
+    "drizzle-kit": "^0.31.4",
     "inngest-cli": "^0.6.0",
     "vitest": "^1.6.0"
   },
