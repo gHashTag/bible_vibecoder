@@ -28,7 +28,6 @@ tools/
 
 # Build artifacts (будут создаваться заново)
 dist/
-bun.lock
 
 # Logs
 *.log

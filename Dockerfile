@@ -1,20 +1,24 @@
 # Multi-stage build для минимального размера
-FROM node:18-alpine AS deps
+# Используем Bun для установки зависимостей
+FROM oven/bun:1 AS deps
 WORKDIR /app
-# Только зависимости
-COPY package.json package-lock.json ./
-RUN npm ci --only=production --no-audit --no-fund --legacy-peer-deps
+# Копируем файлы с зависимостями
+COPY package.json bun.lock* ./
+# Устанавливаем только production зависимости
+RUN bun install --frozen-lockfile --production
 
-FROM node:18-alpine AS builder
+# Стадия сборки
+FROM oven/bun:1 AS builder
 WORKDIR /app
-COPY package.json package-lock.json tsconfig*.json ./
-# Все зависимости для сборки
-RUN npm ci --legacy-peer-deps
+COPY package.json bun.lock* tsconfig*.json ./
+# Устанавливаем все зависимости для сборки
+RUN bun install --frozen-lockfile
 COPY src ./src
 COPY index.ts ./
-# Сборка
-RUN npm run build
+# Сборка TypeScript
+RUN bun run build
 
+# Финальная стадия - используем Node.js для запуска
 FROM node:18-alpine AS runner
 WORKDIR /app
 
@@ -24,10 +28,12 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY package.json ./
 
+# Устанавливаем переменные окружения
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=8080
 
-EXPOSE 3000
+# Railway использует порт 8080 по умолчанию
+EXPOSE 8080
 
-# Минимальный образ без лишнего
+# Запускаем приложение через Node.js
 CMD ["node", "dist/server.js"]

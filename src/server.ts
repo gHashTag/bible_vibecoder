@@ -18,7 +18,7 @@ import functions from './inngest/functions';
 const bot = initBot(config.BOT_TOKEN);
 
 const app = express();
-const port = config.PORT || 3000;
+const port = config.PORT || 8080;
 
 app.use(express.json());
 
