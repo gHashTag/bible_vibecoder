@@ -1,6 +1,5 @@
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile.optimized"
+builder = "NIXPACKS"
 
 [deploy]
 startCommand = "node dist/server.js"
