@@ -63,9 +63,18 @@ WEBHOOK_DOMAIN=https://your-app-name.railway.app
 
 ## ⚠️ Troubleshooting
 
+**Ошибка "dist not found":**
+- ✅ Исправлено! Теперь используется Nixpacks + автосборка
+- Railway теперь сам собирает проект из исходников
+
 **Ошибка сборки:**
 - Проверить логи сборки в Railway
-- Убедиться, что `bun run build:full` работает локально
+- TypeScript теперь в dependencies для сборки
+- Убедиться, что `npm run build` работает локально
+
+**Exit code 137 (память/timeout):**
+- ✅ Исправлено! Nixpacks использует оптимизированную сборку
+- Удален тяжелый multi-stage Dockerfile
 
 **Бот не отвечает:**
 - Проверить BOT_TOKEN в переменных

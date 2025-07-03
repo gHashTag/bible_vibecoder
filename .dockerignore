@@ -26,10 +26,8 @@ vitest.config.ts
 scripts/
 tools/
 
-# Source files (мы копируем только dist/)
-src/
-index.ts
-tsconfig*.json
+# Build artifacts (будут создаваться заново)
+dist/
 bun.lock
 
 # Logs

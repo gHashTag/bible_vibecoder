@@ -1,22 +1,29 @@
-# Используем minimal Node.js образ
+# Используем Node.js LTS
 FROM node:18-slim
 
 WORKDIR /app
 
-# Копируем только необходимые файлы
+# Копируем файлы зависимостей
 COPY package.json package-lock.json ./
 
-# Устанавливаем только production зависимости без build tools
-RUN npm ci --only=production --omit=dev --no-audit --no-fund && \
-    npm cache clean --force && \
-    rm -rf /tmp/* /var/lib/apt/lists/*
+# Устанавливаем зависимости (включая TypeScript для сборки)
+RUN npm ci --legacy-peer-deps && npm cache clean --force
 
-# Копируем уже собранный код  
-COPY dist/ ./dist/
+# Копируем исходный код
+COPY . .
+
+# Собираем проект
+RUN npm run build
+
+# Удаляем dev зависимости для уменьшения размера
+RUN npm prune --production
 
 # Устанавливаем переменные окружения
 ENV NODE_ENV=production
 ENV PORT=3000
 
+# Открываем порт
+EXPOSE 3000
+
 # Запускаем приложение
-CMD ["node", "dist/server.js"]
+CMD ["npm", "start"]
