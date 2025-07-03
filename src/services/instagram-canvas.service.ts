@@ -38,6 +38,15 @@ export class InstagramCanvasService {
   };
 
   private readonly outputDir = path.resolve('./carousel-output');
+  private card?: any;
+  private colorTemplate?: ColorTemplate;
+  private index?: number;
+
+  constructor(card?: any, colorTemplate?: ColorTemplate, index?: number) {
+    this.card = card;
+    this.colorTemplate = colorTemplate;
+    this.index = index;
+  }
 
   /**
    * 🎨 Получить единственный идеальный цветовой темплейт
@@ -603,6 +612,41 @@ export class InstagramCanvasService {
     });
 
     return imagePaths;
+  }
+
+  /**
+   * Метод для совместимости с Inngest generate-carousel
+   */
+  public async renderToBuffer(): Promise<Buffer> {
+    if (!this.card) {
+      throw new Error('Card is required for renderToBuffer');
+    }
+
+    // Преобразуем card в CarouselSlide формат
+    const slide: CarouselSlide = {
+      title: this.card.title || 'VibeCoding',
+      content: this.card.content || 'Осознанное программирование',
+      order: (this.index || 0) + 1,
+      type: 'text'
+    };
+
+    const html = this.generateHtmlTemplate(
+      slide,
+      1, // totalSlides - для единичного слайда
+      this.colorTemplate || ColorTemplate.GALAXY_SPIRAL_BLUR
+    );
+
+    const imageBuffer = await nodeHtmlToImage({
+      html,
+      puppeteerArgs: {
+        defaultViewport: {
+          width: this.defaultConfig.width,
+          height: this.defaultConfig.height,
+        },
+      },
+    });
+
+    return imageBuffer as Buffer;
   }
 }
 

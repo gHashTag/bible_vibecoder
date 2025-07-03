@@ -59,6 +59,20 @@ export const handleWisdom: CommandHandler = async ctx => {
   });
 };
 
+export const handleMyId: CommandHandler = async ctx => {
+  const telegramId = ctx.from?.id;
+  const username = ctx.from?.username;
+  const firstName = ctx.from?.first_name;
+  
+  await ctx.reply(
+    `🆔 **Ваша информация:**\n\n` +
+    `• Telegram ID: \`${telegramId}\`\n` +
+    `• Username: @${username || 'не указан'}\n` +
+    `• Имя: ${firstName || 'не указано'}`,
+    { parse_mode: 'Markdown' }
+  );
+};
+
 export const handleCarousel: CommandHandler = async ctx => {
   const args = (ctx.message as any)?.text?.split(' ').slice(1) || [];
   const topic = args.join(' ').trim();
@@ -163,6 +177,7 @@ export const setupFunctionalCommands = (bot: any) => {
   bot.start(handleStart);
   bot.help(handleHelp);
   bot.command('wisdom', handleWisdom);
+  bot.command('myid', handleMyId);
   bot.command('carousel', handleCarousel);
   bot.on('callback_query', (ctx: Context) => {
     if ((ctx.callbackQuery as any)?.data?.startsWith('color_')) {

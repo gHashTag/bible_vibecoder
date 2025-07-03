@@ -151,3 +151,31 @@ export enum ColorTemplate {
   VIBRANT = 'vibrant',
   MINIMAL = 'minimal',
 }
+
+// Типы для TTS сервиса
+export type Emotion = 'happy' | 'sad' | 'excited' | 'calm' | 'angry' | 'neutral';
+
+export interface TTSOptions {
+  voice?: string;
+  speed?: number;
+  pitch?: number;
+  volume?: number;
+  format?: 'mp3' | 'wav' | 'ogg';
+  emotion?: Emotion;
+}
+
+export interface TTSResult {
+  audioBuffer: Buffer;
+  duration: number;
+  format: string;
+  cacheKey: string;
+}
+
+// Карусельная карточка (алиас для совместимости)
+export interface CarouselCard extends VibeCodingCarouselCard {}
+
+// Стили вибкодинга
+export type VibeCodingStyle = 'minimalist' | 'vibrant' | 'dark' | 'gradient';
+
+// Вибы (настроения/подходы к кодированию)
+export type Vibe = 'zen' | 'aggressive' | 'playful' | 'focused' | 'creative' | 'analytical';

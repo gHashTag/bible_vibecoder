@@ -12,7 +12,8 @@ import { inngest } from '../client';
 import { helloWorld } from './hello-world';
 import { generateCarousel } from './generate-carousel';
 import { vibeCodingResearch } from './vibecoding-research';
-import { vibecodingBroadcastFunction } from './vibecoding-broadcast';
+import { vibecodingBroadcast } from './vibecoding-broadcast';
+import { hourlyCarouselCron } from './hourly-carousel-cron';
 // import { textToSpeech } from './text-to-speech'; // Example, can be added later
 
 // Helper Functions & Types
@@ -29,7 +30,8 @@ const functions = [
   helloWorld,
   generateCarousel,
   vibeCodingResearch,
-  vibecodingBroadcastFunction,
+  vibecodingBroadcast,
+  hourlyCarouselCron,
 
   // Utilities, if they were Inngest functions
   // textToSpeech,
@@ -42,7 +44,8 @@ export {
   helloWorld,
   generateCarousel,
   vibeCodingResearch,
-  vibecodingBroadcastFunction,
+  vibecodingBroadcast,
+  hourlyCarouselCron,
 };
 
 /**

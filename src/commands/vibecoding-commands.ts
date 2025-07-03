@@ -1,6 +1,5 @@
 import { Context } from 'telegraf';
 import { generateVibeCodingCarousel } from '../services/carousel-generator.service';
-import { VibeCodingContentService } from '../services/vibecoding-content.service';
 import { logger, LogType } from '../utils/logger';
 
 export const handleCarouselCommand = async (ctx: Context) => {
@@ -15,7 +14,7 @@ export const handleCarouselCommand = async (ctx: Context) => {
   await ctx.reply(`🎨 Генерирую карусель на тему "${topic}"...`);
 
   try {
-    const result = await generateVibeCodingCarousel(topic, {});
+    const result = await generateVibeCodingCarousel(topic, 'zen', 'minimalist');
 
     if (result.success && result.data) {
       // For now, just confirming generation
@@ -45,7 +44,6 @@ export const handleAskCommand = async (ctx: Context) => {
 
   await ctx.reply(`💡 Ищу ответ на вопрос: "${question}"...`);
   try {
-    const vibeContentService = new VibeCodingContentService();
     // ЗАГЛУШКА: Метод search должен быть реализован в VibeCodingContentService
     const results = [
       { content: 'Это заглушка ответа на ваш вопрос.', source: 'VibeCoding' },

@@ -15,7 +15,7 @@ export const initBot = (token: string): Telegraf<BotContext> => {
   bot = new Telegraf<BotContext>(token);
 
   // 1. Логгер
-  bot.use((ctx, next) => {
+  bot.use((_ctx, next) => {
     logger.info('Update received', { type: LogType.TELEGRAM_API });
     return next();
   });

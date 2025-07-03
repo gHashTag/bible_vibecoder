@@ -12,8 +12,9 @@ import { openai } from '@ai-sdk/openai';
 import { generateObject, generateText, tool } from 'ai';
 import { z } from 'zod';
 import { logger, LogType } from '../utils/logger';
-import { createOpenAI } from '@ai-sdk/openai';
-import { CoreMessage, streamObject } from 'ai';
+// Импорты временно отключены - будут использованы в следующих версиях
+// import { createOpenAI } from '@ai-sdk/openai';
+// import { CoreMessage, streamObject } from 'ai';
 
 // 📊 Схемы для структурированных данных
 const WebSearchResultSchema = z.object({
@@ -57,14 +58,9 @@ export interface IResearchAnalysis {
 const webSearchTool = tool({
   description:
     'Выполняет веб-поиск для получения актуальной информации по теме',
-  inputSchema: z.object({
+  parameters: z.object({
     query: z.string().describe('Поисковый запрос'),
     limit: z.number().optional().default(5).describe('Количество результатов'),
-  }),
-  outputSchema: z.object({
-    results: z.array(WebSearchResultSchema),
-    totalFound: z.number(),
-    searchTime: z.number(),
   }),
   execute: async ({ query, limit = 5 }) => {
     try {
@@ -151,8 +147,8 @@ const webSearchTool = tool({
             // Формируем хештеги для поиска
             const hashtags = query
               .split(' ')
-              .filter(word => word.length > 3)
-              .map(word => `#${word}`)
+              .filter((word: string) => word.length > 3)
+              .map((word: string) => `#${word}`)
               .join(' ');
 
             const instagramActorId = 'reGe1ST3OBgYZSsZJ'; // instagram-hashtag-scraper
@@ -348,15 +344,9 @@ const webSearchTool = tool({
  */
 const vibeCodingAnalysisTool = tool({
   description: 'Анализирует контент с точки зрения философии VibeCoding',
-  inputSchema: z.object({
+  parameters: z.object({
     content: z.string().describe('Контент для анализа'),
     focus: z.string().optional().describe('Фокус анализа'),
-  }),
-  outputSchema: z.object({
-    vibeCodingRelevance: z.number().min(0).max(10),
-    keyPrinciples: z.array(z.string()),
-    practicalTips: z.array(z.string()),
-    philosophicalInsights: z.array(z.string()),
   }),
   execute: async ({ content, focus }) => {
     logger.info('🧠 Анализируем контент через призму VibeCoding', {
@@ -518,6 +508,8 @@ ${result.text}
     return this.quickAnalysis(question);
   }
 
+  // TODO: Метод будет использован в следующих версиях
+  /*
   private async runResearch(
     topic: string,
     options: {
@@ -540,6 +532,7 @@ ${result.text}
       confidenceLevel: 8,
     };
   }
+  */
 }
 
 // 🕉️ Экспорт готового к использованию агента

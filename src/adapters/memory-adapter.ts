@@ -12,7 +12,7 @@ import {
   NotificationSettingsSchema,
 } from '../schemas';
 import { randomUUID } from 'crypto'; // Для генерации UUID
-import { SessionData } from '../bot'; // Импортируем SessionData из bot.ts
+import { SessionData } from './storage-adapter';
 // import { Note } from "../schemas"; // Для примера с заметками
 import { logger, LogType } from '../utils/logger';
 
@@ -52,9 +52,21 @@ export class MemoryAdapter implements StorageAdapter {
     this.sessions.set(key, session);
   }
 
-  async delete(key: string): Promise<void> {
+  async delete(key: string): Promise<boolean> {
     logger.debug(`MemoryAdapter: delete session for key ${key}`);
-    this.sessions.delete(key);
+    return this.sessions.delete(key);
+  }
+
+  async has(key: string): Promise<boolean> {
+    return this.sessions.has(key);
+  }
+
+  async keys(): Promise<string[]> {
+    return Array.from(this.sessions.keys());
+  }
+
+  async clear(): Promise<void> {
+    this.sessions.clear();
   }
   // --- End of SessionStore<SessionData> implementation ---
 

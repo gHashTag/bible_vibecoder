@@ -1,95 +1,78 @@
-import { logger, LogType } from '../utils/logger';
-import { ColorTemplate } from '../types';
 import { VibeCodingContentService } from './vibecoding-content.service';
+import { logger, LogType } from '../utils/logger';
+import { CarouselCard, ColorTemplate, Vibe, VibeCodingStyle } from '../types';
 
-export interface TemplateDesign {
-  background: string;
-  textColor: string;
-  font: string;
+export class CarouselGeneratorService {
+  private topic: string;
+  private style: VibeCodingStyle;
+
+  constructor(
+    topic: string,
+    _vibe: Vibe = 'zen',
+    style: VibeCodingStyle = 'minimalist'
+  ) {
+    this.topic = topic;
+    this.style = style;
+  }
+
+  public async generate(): Promise<{
+    success: boolean;
+    error?: string;
+    data?: { colorTemplate: ColorTemplate; cards: CarouselCard[] };
+  }> {
+    try {
+      const vibeContentService = new VibeCodingContentService();
+
+      const content = await vibeContentService.search({ query: this.topic, max_results: 5 });
+      if (!content || content.length === 0) {
+        return { success: false, error: 'No content generated' };
+      }
+      const cards: CarouselCard[] = content.map((c, index) => ({
+        id: `card_${index}`,
+        title: c.title,
+        content: c.content,
+        summary: c.content.substring(0, 100) + '...',
+        category: 'vibecoding',
+        tags: ['vibecoding', 'meditation'],
+        sourceFile: 'generated',
+        relevanceScore: 8.5,
+      }));
+
+      logger.info('Carousel content generated', { type: LogType.SYSTEM });
+
+      const colorTemplate =
+        Object.values(ColorTemplate)[
+          Math.floor(Math.random() * Object.values(ColorTemplate).length)
+        ];
+
+      return {
+        success: true,
+        data: {
+          colorTemplate: colorTemplate,
+          cards: cards,
+        },
+      };
+    } catch (error) {
+      logger.error('Error generating Vibecoding carousel', {
+        type: LogType.ERROR,
+        error: error instanceof Error ? error : new Error(String(error)),
+        data: { topic: this.topic, style: this.style },
+      });
+
+      return {
+        success: false,
+        error: 'Error generating carousel',
+      };
+    }
+  }
 }
 
-export const galaxySpiralBlur: TemplateDesign = {
-  background:
-    'https://cdn.discordapp.com/attachments/1258696805219434546/1258700257085755433/u2217837778_A_book_hanging_in_the_air_against_the_backdrop_of_c_bdaf4c83-c9af-457e-aba2-865b825fb4b6.png?ex=6688f288&is=6687a108&hm=b823e85a6745f9ccf41bc8748ac8c0a876a445a4a580662d55981665a3c00445&',
-  textColor: '#FFFFFF',
-  font: 'PlayfairDisplay-Bold',
-};
-
-export const vibrant: TemplateDesign = {
-  background: '#ffde00',
-  textColor: '#000000',
-  font: 'Lato-Regular',
-};
-
-export const minimal: TemplateDesign = {
-  background: '#f0f0f0',
-  textColor: '#333333',
-  font: 'Lato-Regular',
-};
-
-const templates: Record<ColorTemplate, TemplateDesign> = {
-  [ColorTemplate.GALAXY_SPIRAL_BLUR]: galaxySpiralBlur,
-  [ColorTemplate.VIBRANT]: vibrant,
-  [ColorTemplate.MINIMAL]: minimal,
-};
-
+// Экспорт функции для совместимости
 export async function generateVibeCodingCarousel(
   topic: string,
-  options: {
-    maxCards?: number;
-    style?: ColorTemplate;
-    includeCodeExamples?: boolean;
-  }
+  vibe: Vibe = 'zen',
+  style: VibeCodingStyle = 'minimalist'
 ) {
-  logger.info('Запуск генерации карусели Vibecoding', {
-    type: LogType.BUSINESS_LOGIC,
-    data: { topic, options },
-  });
-
-  try {
-    const vibeContentService = new VibeCodingContentService();
-    // ЗАГЛУШКА: Метод search должен быть реализован в VibeCodingContentService
-    const content = [
-      {
-        title: topic,
-        content:
-          'Это контент-заглушка для карусели, сгенерированный автоматически.',
-      },
-    ];
-
-    const colorTemplateKeys = Object.values(ColorTemplate);
-    const currentTemplateKey =
-      options.style ||
-      colorTemplateKeys[Math.floor(Math.random() * colorTemplateKeys.length)];
-    const selectedTemplate = templates[currentTemplateKey];
-
-    if (!selectedTemplate) {
-      throw new Error(`Не найден шаблон для стиля: ${currentTemplateKey}`);
-    }
-
-    logger.info('Контент для карусели успешно сгенерирован', {
-      type: LogType.SUCCESS,
-      data: { topic, count: content.length },
-    });
-
-    return {
-      success: true,
-      message: 'Карусель успешно сгенерирована',
-      data: {
-        colorTemplate: currentTemplateKey,
-        cards: content,
-      },
-    };
-  } catch (error) {
-    logger.error('Ошибка при генерации карусели Vibecoding', {
-      type: LogType.ERROR,
-      error: error instanceof Error ? error : new Error(String(error)),
-      data: { topic, options },
-    });
-
-    return {
-      success: false,
-      error: 'Ошибка при генерации карусели',
-    };
-  }
+  const generator = new CarouselGeneratorService(topic, vibe, style);
+  return generator.generate();
 }
