@@ -5,8 +5,9 @@
   "main": "index.ts",
   "scripts": {
     "start": "node dist/server.js",
+    "build": "tsc --project tsconfig.build.json",
     "dev": "bun --watch index.ts",
-    "build": "bun build index.ts --outdir ./dist --target bun",
+    "build:bun": "bun build index.ts --outdir ./dist --target bun",
     "build:full": "tsc --project tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest",

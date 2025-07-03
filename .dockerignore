@@ -1,3 +1,12 @@
+# Git
+.git
+.gitignore
+
+# Documentation  
+docs/
+*.md
+!README.md
+
 # Development files
 .env
 .env.local
@@ -16,16 +25,21 @@ vitest.config.ts
 # Scripts and tools
 scripts/
 tools/
-docs/
 
-# Bun specific
+# Source files (мы копируем только dist/)
+src/
+index.ts
+tsconfig*.json
 bun.lock
 
-# Logs and cache
+# Logs
 *.log
 logs/
+
+# Cache
 cache/
 .cache/
+node_modules/.cache
 
 # OS files
 .DS_Store
