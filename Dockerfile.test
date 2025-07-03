@@ -1,0 +1,28 @@
+# Минимальный тестовый Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Копируем только необходимые файлы
+COPY package.json ./
+COPY tsconfig.json ./
+COPY src ./src
+COPY index.ts ./
+
+# Устанавливаем зависимости и TypeScript глобально
+RUN npm install -g typescript && \
+    npm install --production && \
+    npm install --save-dev typescript @types/node
+
+# Компилируем TypeScript
+RUN npx tsc --project tsconfig.build.json || npx tsc
+
+# Проверяем, что файлы скомпилировались
+RUN ls -la dist/
+
+ENV NODE_ENV=production
+ENV PORT=8080
+
+EXPOSE 8080
+
+CMD ["node", "dist/server.js"]
