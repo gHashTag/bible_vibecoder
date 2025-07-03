@@ -3,14 +3,14 @@
 FROM oven/bun:1 AS deps
 WORKDIR /app
 # Копируем файлы с зависимостями
-COPY package.json bun.lock* ./
+COPY package.json bun.lock ./
 # Устанавливаем только production зависимости
 RUN bun install --frozen-lockfile --production
 
 # Стадия сборки
 FROM oven/bun:1 AS builder
 WORKDIR /app
-COPY package.json bun.lock* tsconfig*.json ./
+COPY package.json bun.lock tsconfig*.json ./
 # Устанавливаем все зависимости для сборки
 RUN bun install --frozen-lockfile
 COPY src ./src

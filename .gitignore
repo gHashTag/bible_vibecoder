@@ -145,3 +145,6 @@ assets/generated/
 # Local development
 .local
 *.local
+
+# Bun binary lockfile  
+bun.lockb
