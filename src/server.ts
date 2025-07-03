@@ -34,10 +34,9 @@ app.use(
 // Telegram webhook
 // Устанавливаем вебхук только в окружении 'production'
 if (process.env.NODE_ENV === 'production') {
-  // Railway автоматически предоставляет URL через RAILWAY_STATIC_URL
-  const webhookDomain = process.env.RAILWAY_STATIC_URL 
-    ? `https://${process.env.RAILWAY_STATIC_URL}`
-    : config.WEBHOOK_DOMAIN;
+  // Railway предоставляет готовый URL через BOT_WEBHOOK_DOMAIN
+  const webhookDomain = config.WEBHOOK_DOMAIN || 
+    (process.env.RAILWAY_STATIC_URL ? `https://${process.env.RAILWAY_STATIC_URL}` : null);
   
   if (!webhookDomain) {
     logger.error('WEBHOOK_DOMAIN or RAILWAY_STATIC_URL not set. Cannot configure webhook.', { 
