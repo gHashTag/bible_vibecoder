@@ -12,6 +12,8 @@ RUN bun install --frozen-lockfile
 COPY tsconfig*.json ./
 COPY src ./src
 COPY index.ts ./
+COPY vibecoding ./vibecoding
+COPY docs ./docs
 
 # Собираем TypeScript
 RUN bun run build
@@ -25,6 +27,8 @@ WORKDIR /app
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/vibecoding ./vibecoding
+COPY --from=builder /app/docs ./docs
 
 # Устанавливаем переменные окружения
 ENV NODE_ENV=production
