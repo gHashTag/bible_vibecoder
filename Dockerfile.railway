@@ -1,0 +1,55 @@
+# Railway-optimized Dockerfile using Node.js
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install bun globally
+RUN npm install -g bun@latest
+
+# Copy dependency files
+COPY package.json bun.lockb* package-lock.json* ./
+
+# Install dependencies
+RUN if [ -f bun.lockb ]; then \
+      bun install --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then \
+      npm ci; \
+    else \
+      npm install; \
+    fi
+
+# Copy source files
+COPY tsconfig*.json ./
+COPY src ./src
+COPY index.ts ./
+COPY vibecoding ./vibecoding
+COPY docs ./docs
+
+# Build TypeScript
+RUN if command -v bun >/dev/null 2>&1; then \
+      bun run build; \
+    else \
+      npm run build; \
+    fi
+
+# Production stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy built application
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/vibecoding ./vibecoding
+COPY --from=builder /app/docs ./docs
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=8080
+
+# Expose port
+EXPOSE 8080
+
+# Start the application
+CMD ["node", "dist/server.js"]
