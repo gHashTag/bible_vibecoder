@@ -15,6 +15,8 @@ export interface AppConfig {
   PORT?: number;
   // Apollo Client конфигурация
   GRAPHQL_ENDPOINT?: string;
+  // ID телеграм чата для крон-функций
+  TELEGRAM_ID?: string;
 }
 
 /**
@@ -50,6 +52,7 @@ const createConfig = (): AppConfig => {
   WEBHOOK_DOMAIN: process.env.BOT_WEBHOOK_DOMAIN || process.env.WEBHOOK_DOMAIN,
     PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : undefined,
     GRAPHQL_ENDPOINT: process.env.GRAPHQL_ENDPOINT,
+    TELEGRAM_ID: process.env.TELEGRAM_ID,
   };
 
   // Проверяем обязательные параметры
