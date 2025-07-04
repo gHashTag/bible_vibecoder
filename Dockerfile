@@ -19,7 +19,8 @@ COPY docs ./docs
 RUN bun run build
 
 # Production stage
-FROM node:18-alpine
+# Используем тот же образ для избежания проблем с сетью
+FROM oven/bun:1
 
 WORKDIR /app
 
@@ -37,5 +38,5 @@ ENV PORT=8080
 # Открываем порт
 EXPOSE 8080
 
-# Запускаем через npm start
-CMD ["npm", "start"]
+# Запускаем через bun
+CMD ["bun", "run", "start"]

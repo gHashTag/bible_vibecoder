@@ -32,9 +32,8 @@ app.use(
 );
 
 // Telegram webhook
-// ВРЕМЕННО: Используем polling режим для Railway
-// Переключитесь обратно на вебхук, когда разберемся с проблемой
-if (process.env.NODE_ENV === 'production' && process.env.USE_WEBHOOK === 'true') {
+// Устанавливаем вебхук в production режиме
+if (process.env.NODE_ENV === 'production') {
   // Railway предоставляет готовый URL через BOT_WEBHOOK_DOMAIN
   const webhookDomain = config.WEBHOOK_DOMAIN || 
     (process.env.RAILWAY_STATIC_URL ? `https://${process.env.RAILWAY_STATIC_URL}` : null);
